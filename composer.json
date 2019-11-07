@@ -1,0 +1,27 @@
+{
+    "name"       : "erikjoling/ejo-templating",
+    "description": "My custom templating foundation",
+    "keywords"   : ["wordpress"],
+    "homepage"   : "https://www.ejoweb.nl/",
+    "license"    : "GPL-2.0+",
+    "authors"    : [
+        {
+            "name"    : "Ejoweb",
+            "email"   : "erik@ejoweb.nl",
+            "homepage": "https://ejoweb.nl/",
+            "role"    : "Developer"
+        }
+    ],
+    "support"    : {
+        "issues": "https://github.com/erikjoling/ejo-templating/issues",
+        "email" : "erik@ejoweb.nl"
+    },
+    "autoload"   : {
+        "files" : [
+            "src/bootstrap.php"
+        ]
+    },
+    "require"     : {
+        "php" : ">=7.1"
+    }
+}
