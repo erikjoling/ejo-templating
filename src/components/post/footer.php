@@ -2,7 +2,7 @@
 /**
  * Post Footer
  */
-use function Ejo\Base\load_components;
+use function Ejo\Tmpl\load_components;
 
 // Which components to use and in which order
 $data['components'] = apply_filters( 'ejo/base/template/post/footer', [ 'post/more-link', 'post/meta' ] );

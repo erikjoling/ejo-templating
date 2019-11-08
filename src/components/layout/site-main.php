@@ -3,7 +3,7 @@
  * Component for Page
  */
 
-use function Ejo\Base\load_components;
+use function Ejo\Tmpl\load_components;
 
 // This component expects the following data
 $data['components']     = $data['components'] ?? [ 'layout/page', 'layout/site-sidebar' ];

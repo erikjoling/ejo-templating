@@ -3,7 +3,7 @@
  * Post
  */
 
-use function Ejo\Base\load_components;
+use function Ejo\Tmpl\load_components;
 
 // Which components to use and in which order
 $components = apply_filters( 'ejo/base/post/post-plural', [ 'post/header', 'post/excerpt', 'post/footer' ] );

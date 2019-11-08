@@ -3,7 +3,7 @@
  * Site content
  */
 
-use function Ejo\Base\get_page_content;
+use function Ejo\Tmpl\get_page_content;
 
 ?>
 

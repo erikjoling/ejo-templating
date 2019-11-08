@@ -5,7 +5,7 @@
  * This template expects a $data array
  */
 
-use function Ejo\Base\load_components;
+use function Ejo\Tmpl\load_components;
 
 // This component expects the following data
 $data['components']     = [ 'page/breadcrumbs', 'page/title' ];

@@ -2,7 +2,7 @@
 /**
  * Page Header
  */
-use function Ejo\Base\load_components;
+use function Ejo\Tmpl\load_components;
 
 $data['components']     = [ 'site/skip-to-content', 'site/branding', 'site/nav-toggle', 'site/nav'  ];
 $data['custom-classes'] = [];

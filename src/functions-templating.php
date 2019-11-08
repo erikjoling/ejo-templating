@@ -3,43 +3,24 @@
  * Templating functions.
  */
 
-namespace Ejo\Base;
+namespace Ejo\Tmpl;
+
 
 /**
- * Load Templates based on hierarchy (for use inside theme)
- *
- * It relies on the Hybrid View template loader and hierarchy
+ * Render the footer line
  */
-function load_template( $data = null ) {
-	\Hybrid\View\display( 'templates', \Hybrid\Template\hierarchy(), $data );
+function render_site_credits() {
+
+	return sprintf( __( 'Website by %s & %s', 'ejo-base' ), 
+		'<a href="https://www.ejoweb.nl/" target="_blank" title="Ejoweb">Erik</a>',
+		'<a href="https://www.woutervanderzee.nl/" target="_blank" title="Wouter van der Zee">Wouter</a>' 
+	);
 }
 
 /**
- * Load component
+ * Render the footer line
  */
-function load_component( $component, $data = [] ) {
+function render_site_info() {
 
-	// Load component
-	require( get_file_path( 'lib/templating/components/' . $component . '.php' ) );
-}
-
-/**
- * Load components
- */
-function load_components( $components ) {
-	if ( is_array($components) ) {
-
-		foreach ($components as $component) {
-
-			load_component( $component, [] );
-		
-		}
-	}
-}
-
-function remove_component( $components, $name ) {
-	if (($key = array_search($name, $components)) !== false) {
-	    unset($components[$key]);
-	}
-	return $components;
+	return get_bloginfo( 'name', 'display' ) . ' © ' . date('Y');
 }

@@ -6,7 +6,7 @@
  * components to show, order-specific
  */
 
-use function Ejo\Base\load_component;
+use function Ejo\Tmpl\load_component;
 
 // This component expects the following data
 $data['components']     = [ 'post/post-plural' ];

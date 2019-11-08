@@ -10,7 +10,7 @@ $label = 'pwbox-' . ( empty($post->ID) ? rand() : $post->ID );
 	<div class="row row--full row--margin">
 		
 		<div class="cell cell--fixed">
-			<div class="post-password-form__icon icon"><?php Ejo\Base\display_svg( 'lock-alt' ); ?></div>
+			<div class="post-password-form__icon icon"><?php Ejo\Tmpl\display_svg( 'lock-alt' ); ?></div>
 		</div>
 		<div class="post-password-form__inner">
 			<p><?= __( 'This content is password protected. To view it please enter your password below:' ) ?></p>
