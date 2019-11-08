@@ -2,8 +2,7 @@
 
 use function Ejo\Tmpl\display_html_attr;
 use function Ejo\Tmpl\display_body_classes;
-// use function Ejo\Tmpl\load_component;
-
+use function Ejo\Tmpl\render_component;
 
 ?>
 <!doctype html>
@@ -15,15 +14,7 @@ use function Ejo\Tmpl\display_body_classes;
 
 <body class="<?php display_body_classes(); ?>">
 
-	<h1>Template index</h1>
-
-	<?php // load_component( 'layout/site' ); ?>
-
-	<?php 
-
-	echo Ejo\Tmpl\render_component( 'site' ); 
-
-	?>
+	<?php echo render_component( 'site' ); ?>
 
 	<?php wp_footer(); ?>
 	

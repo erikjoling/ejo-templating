@@ -7,138 +7,114 @@ namespace Ejo\Tmpl;
 
 function start_engine() {
 
-	register_component( 'site',  		['tag' => 'div'] );
-	register_component( 'site-header',  ['tag' => 'header'] );
-	register_component( 'site-main',    ['tag' => 'main'] );
-	register_component( 'site-footer',  ['tag' => 'footer'] );
-	register_component( 'page',         ['tag' => 'article'] );
-	register_component( 'page-header',  ['tag' => 'header'] );
-	register_component( 'page-content', ['tag' => 'div'] );
-	register_component( 'page-footer',  ['tag' => 'footer'] );
+	register_component( 'site',  		['tag' => 'div', 'inner_wrap' => true] );
+	register_component( 'site-header',  ['tag' => 'header', 'inner_wrap' => true] );
+	register_component( 'site-main',    ['tag' => 'main', 'inner_wrap' => true] );
+	register_component( 'site-footer',  ['tag' => 'footer', 'inner_wrap' => true] );
+	register_component( 'page',         ['tag' => 'article', 'inner_wrap' => true] );
+	register_component( 'page-header',  ['tag' => 'header', 'inner_wrap' => true] );
+	register_component( 'page-content', ['tag' => 'div', 'inner_wrap' => true] );
+	register_component( 'page-footer',  ['tag' => 'footer', 'inner_wrap' => true] );
 
+	// add_to_component( 'site', [ 'site-header' ] );
 	add_to_component( 'site', [ 'site-header', 'site-main', 'site-footer' ] );
 	add_to_component( 'site-main', [ 'page' ] );
-	add_to_component( 'page', [ 'page-header', 'page-content', 'page-footer' ] );
+	add_to_component( 'page', [ 'fn:the_post', 'page-header', 'page-content', 'page-footer' ] );
+	add_to_component( 'site-header', [ 'fn:render_site_branding' ] );
+	add_to_component( 'page-header', [ 'fn:render_page_title' ] );
+	add_to_component( 'page-content', [ 'fn:render_page_content' ] );
 
-	require_once( 'template-index.php' );
+	log(get_components());
+}
+
+function load_template() {
+	require_once( 'template-index.php' );	
 }
 
 
-function register_component( $name, $args = [] ) {
+function register_component( $name, $component = [] ) {
 	global $ejo_components;
 
-	$ejo_components[$name]['args'] = $args;
-	$ejo_components[$name]['components'] = [];
+	$ejo_components[$name] = $component;
 }
-
 
 function add_to_component( $name, $components ) {
 	global $ejo_components;
 
-	$ejo_components[$name]['components'] = $components;
+	$ejo_components[$name]['inner_components'] = $components;
 }
 
-function get_component_args( $name ) {
+function get_components() {
 	global $ejo_components;
 
-	return $ejo_components[$name]['args'] ?? [];
+	return $ejo_components ?? [];
 }
 
-function get_component_components( $name ) {
+function get_component( $name ) {
 	global $ejo_components;
 
-	return $ejo_components[$name]['components'] ?? [];
+	return $ejo_components[$name] ?? [];
 }
 
-// function render_components( $name ) {
-// 	global $ejo_components;
+/**
+ * Check if component is registered
+ */
+function is_registered_component( $name ) {
+	global $ejo_components;
 
-// 	$components = 
+	return isset($ejo_components[$name]);
+}
 
-// 	foreach ( as $component) {
-// 		# code...
-// 	}
-// }
-
+/**
+ * Render component
+ *
+ * Note: A component should be registered first
+ */
 function render_component( $name ) {
 
-	echo $name;
+	if ( ! is_registered_component( $name ) ) {
+		return;
+	}
 
-	$default_args = [
-		'tag'           => 'div',
-		'inner_wrap'    => true,
-		'extra_classes' => [],
-		'attributes'    => [],
+	$defaults = [
+		'tag'              => 'div',
+		'inner_wrap'       => false,
+		'extra_classes'    => [],
+		'attributes'       => [],
+		'inner_components' => [],
 	];
 
 	// Setup component
-	$args = array_merge( $default_args, get_component_args($name) );
-	$args = apply_filters( "ejo/tmpl/{$name}/args", $args );
+	$data = array_merge( $defaults, get_component($name) );
+	$data = apply_filters( "ejo/tmpl/{$name}", $data );
 
 	// Process component
-	$name       = esc_html( $name );
-	$tag        = esc_html( $args['tag'] );
-	$classes    = trim( $name . ' ' . render_classes($args['extra_classes']) );
-	$attributes = render_attr( $args['attributes'] );
-	$inner_wrap	= !! $args['inner_wrap'];
+	$name             = esc_html( $name );
+	$tag              = esc_html( $data['tag'] );
+	$classes          = trim( $name . ' ' . render_classes($data['extra_classes']) );
+	$attributes       = render_attr( $data['attributes'] );
+	$inner_wrap	      = !! $data['inner_wrap'];
+	$inner_components = $data['inner_components'];
 
 	// Setup render
-	// $format_inner_wrap = ( $inner_wrap ) ? sprintf( '<div class="%s">%%s</div>', "{$name}__inner" ) : '%s'; 
-	// $format = sprintf( '<%1$s class="%2$s"%3$s>%4$s</%1$s>', $tag, $classes, $attributes, $format_inner_wrap );
+	$format_inner_wrap = ( $inner_wrap ) ? sprintf( '<div class="%s">%%s</div>', "{$name}__inner" ) : '%s'; 
+	$format = sprintf( '<%1$s class="%2$s"%3$s>%4$s</%1$s>', $tag, $classes, $attributes, $format_inner_wrap );
 
-	$render = '';
+	$inner_content = '';
 
-	$render .= "<{$tag} class=\"{$classes}\"{$attributes}>";
-	$render .= ( $inner_wrap ) ? "<div class=\"{$name}__inner\">" : ''; 
+	foreach ( $inner_components as $inner_component ) {
 
-	foreach ( get_component_components($name) as $component) {
-		$render .= render_component( $component );
-		// $content .= $component;
+		if ( 'fn:' === substr( $inner_component, 0, 3 ) ) {
+			$function = __NAMESPACE__ . '\\' . substr($inner_component, 3, strlen($inner_component));
+
+			log($function);
+			$inner_content .= $function();
+		}
+		else {
+			$inner_content .= render_component( $inner_component );
+		}
+
 	}
 
-	$render .= ( $inner_wrap ) ? "</div>" : '';
-	$render .= "</{$tag}>";
-
-	echo $render;
+	return sprintf( $format, $inner_content );
 }
-
-
-
-// /**
-//  * Load Templates based on hierarchy (for use inside theme)
-//  *
-//  * It relies on the Hybrid View template loader and hierarchy
-//  */
-// function load_template( $data = null ) {
-// 	\Hybrid\View\display( 'templates', \Hybrid\Template\hierarchy(), $data );
-// }
-
-// /**
-//  * Load component
-//  */
-// function load_component( $component, $data = [] ) {
-
-// 	// Load component
-// 	require( get_file_path( 'lib/templating/components/' . $component . '.php' ) );
-// }
-
-// /**
-//  * Load components
-//  */
-// function load_components( $components ) {
-// 	if ( is_array($components) ) {
-
-// 		foreach ($components as $component) {
-
-// 			load_component( $component, [] );
-		
-// 		}
-// 	}
-// }
-
-// function remove_component( $components, $name ) {
-// 	if (($key = array_search($name, $components)) !== false) {
-// 	    unset($components[$key]);
-// 	}
-// 	return $components;
-// }

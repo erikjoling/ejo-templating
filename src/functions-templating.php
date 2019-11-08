@@ -6,6 +6,49 @@
 namespace Ejo\Tmpl;
 
 
+function render_site_branding() {
+
+	ob_start();
+	?>
+
+	<div class="site-branding">
+		<h1 class="site-branding__title">
+			<a class="site-branding__link" href="<?= home_url() ?>" rel="home"><?= get_bloginfo( 'name', 'display' ) ?></a>
+		</h1>
+	</div>
+	
+	<?php
+	$render = ob_get_contents();
+   	ob_end_clean();
+
+	return $render;
+}
+
+function render_page_title() {
+
+	ob_start();
+	?>
+
+	<h1 class="page-title"><?= get_the_title() ?></h1>
+	
+	<?php
+	$render = ob_get_contents();
+   	ob_end_clean();
+
+	return $render;
+}
+
+function render_page_content() {
+
+	ob_start();
+	the_content();
+	$render = ob_get_contents();
+   	ob_end_clean();
+
+	return $render;
+}
+
+
 /**
  * Render the footer line
  */
