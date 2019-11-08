@@ -19,6 +19,12 @@ use function Ejo\Tmpl\display_body_classes;
 
 	<?php // load_component( 'layout/site' ); ?>
 
+	<?php 
+
+	echo Ejo\Tmpl\render_component( 'site' ); 
+
+	?>
+
 	<?php wp_footer(); ?>
 	
 </body>
