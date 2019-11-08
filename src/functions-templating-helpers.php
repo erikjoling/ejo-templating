@@ -45,3 +45,12 @@ function get_html_attr() {
 
 	return $attr;
 }
+
+
+function get_menu_name( $location ) {
+	$locations = get_nav_menu_locations();
+
+	$menu = isset( $locations[ $location ] ) ? wp_get_nav_menu_object( $locations[ $location ] ) : '';
+
+	return $menu ? $menu->name : '';
+}

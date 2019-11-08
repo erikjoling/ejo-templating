@@ -7,12 +7,17 @@ function is_main_loop() {
 	return ( \get_the_ID() == \get_queried_object_id() );
 }
 
-function is_plural_page() {
-	return is_home() || is_archive() || is_search();
+function is_plural_page( $post_type = null ) {
+
+	if ( $post_type == 'post') {
+		return is_home() || is_archive();
+	}
+
+	return is_search() || is_home() || is_archive();
 }
 
-function is_singular_page() {
-	return is_singular();
+function is_singular_page( $post_type = null ) {
+	return is_singular( $post_type );
 }
 
 function is_blog_page() {
