@@ -28,13 +28,19 @@ function render_component( $name ) {
 	if ( empty( $ejo_component_parents ) ) {
 		$ejo_component_parents = [];
 	}
-	
-	$component = apply_filters( "ejo/tmpl/{$name}", [] );
+
+	/**
+	 * Prevent a component to be it's own parent
+	 */ 
+	if ( in_array($name, $ejo_component_parents) ) {
+		log("Fout: $name is eigen ouder");
+		return '';
+	}
 
 	// Process component data
 	$name    = esc_html( $name );
-	$element = $component['element'] ?? false;
-	$content = $component['content'] ?? null;
+	$element = apply_filters( "ejo/tmpl/{$name}/element", false );
+	$content = apply_filters( "ejo/tmpl/{$name}/content", null );
 
 	// If element is specified process it
 	if ( is_array($element) ) {
@@ -57,10 +63,6 @@ function render_component( $name ) {
 		$element['force_display'] = !! $element['force_display'];
 	}
 
-	/**
-	 * This is for component-functions to directly render content
-	 */
-	$content = apply_filters( "ejo/tmpl/{$name}/content", $content );
 
 	// Setup content render
 	$content_render = '';
@@ -135,6 +137,8 @@ function remove_current_component_as_parent( $name ) {
 }
 
 function component_prepend( &$components, $value, $prepend_before = null ) {
+	$components = ( is_array($components) ) ? $components : [];
+
 	if ($prepend_before) {
 		$components = array_insert_before($components, $prepend_before, $value);
 	}
@@ -144,6 +148,8 @@ function component_prepend( &$components, $value, $prepend_before = null ) {
 }
 
 function component_append( &$components, $value, $prepend_after = null ) {
+	$components = ( is_array($components) ) ? $components : [];
+
 	if ($prepend_after) {
 		$components = array_insert_after($components, $prepend_after, $value);
 	}
