@@ -49,6 +49,12 @@ add_action( 'wp', function() {
 	});
 
 
+
+	add_filter( 'ejo/tmpl/page-title/element', function( $element ) {
+		return [ 'tag' => 'h1' ];
+	});
+
+
 	/**
 	 * Content
 	 */
@@ -83,7 +89,7 @@ add_action( 'wp', function() {
 	add_filter( 'ejo/tmpl/site-branding/content', __NAMESPACE__ . '\render_site_branding' );
 	add_filter( 'ejo/tmpl/site-nav-toggle/content', __NAMESPACE__ . '\render_site_nav_toggle' );
 	add_filter( 'ejo/tmpl/site-nav/content', __NAMESPACE__ . '\render_site_nav' );
-	add_filter( 'ejo/tmpl/page-title/content', __NAMESPACE__ . '\render_page_title' );
+	add_filter( 'ejo/tmpl/page-title/content', __NAMESPACE__ . '\get_page_title' );
 	add_filter( 'ejo/tmpl/page-content/content', __NAMESPACE__ . '\render_page_content' );
 	add_filter( 'ejo/tmpl/breadcrumbs/content', __NAMESPACE__ . '\render_breadcrumbs' );
 	add_filter( 'ejo/tmpl/the-post/content', '\the_post' );
@@ -137,12 +143,23 @@ add_action( 'wp', function() {
 		return $content;
 	});
 
-	add_filter( 'ejo/tmpl/page-main/content', function( $content ) {
-		component_prepend( $content, 'page-header' );
+	add_filter( 'ejo/tmpl/page-footer/content', function( $content ) {
+		component_prepend( $content, 'page-title' );
+		component_prepend( $content, 'page-title' );
+		component_prepend( $content, 'page-title' );
 		// component_append( $content, 'page-content' );
 		// component_append( $content, 'page-footer' );
 
 		return $content;
+	});
+
+	add_filter( 'ejo/tmpl/page-title/element', function( $element ) {
+
+		if (has_component_parent('page-footer')) {
+			$element['tag'] = 'h3';
+		}
+
+		return $element;
 	});
 
 	// add_filter( 'ejo/tmpl/page-footer/content', function( $content ) {

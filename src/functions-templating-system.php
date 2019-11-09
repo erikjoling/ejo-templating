@@ -32,7 +32,7 @@ function render_component( $name ) {
 	/**
 	 * Prevent a component to be it's own parent
 	 */ 
-	if ( in_array($name, $ejo_component_parents) ) {
+	if ( has_component_parent($name) ) {
 		log("Fout: $name is eigen ouder");
 		return '';
 	}
@@ -120,6 +120,10 @@ function get_component_parents() {
 	global $ejo_component_parents;
 
 	return $ejo_component_parents;
+}
+
+function has_component_parent( $parent ) {
+	return in_array($parent, get_component_parents());
 }
 
 function add_current_component_as_parent( $name ) {
