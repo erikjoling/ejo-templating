@@ -18,8 +18,101 @@ function render_site_branding() {
 	</div>
 	
 	<?php
-	$render = ob_get_contents();
-   	ob_end_clean();
+	$render = ob_get_clean();
+
+	return $render;
+}
+
+function render_breadcrumbs() {
+
+	ob_start();
+	?>
+
+	Breadcrumbs
+	
+	<?php
+	$render = ob_get_clean();
+
+	return $render;
+}
+
+
+function render_post_archive_loop() {
+	$render = '';
+
+	ob_start();
+	
+	while ( have_posts() ) {
+		the_post();
+		echo render_plural_post();
+	}
+	
+	$render = ob_get_clean();
+
+	return $render;
+}
+
+function render_plural_post() {
+	log('render_plural_post');
+
+	ob_start();
+	?>
+
+	<article class="post post--plural">
+		<div class="post__inner">
+			
+			<?php echo render_plural_post_header(); ?>
+			<?php echo render_plural_post_content(); ?>
+			<?php echo render_plural_post_footer(); ?>
+
+		</div>
+	</article>
+	
+	<?php
+	$render = ob_get_clean();
+
+	return $render;
+}
+
+function render_plural_post_header() {
+	log('render_plural_post_header');
+	ob_start();
+
+	?>
+	<header class="post__header">
+		<h3><a href="<?php the_permalink() ?>" class=""><?php the_title(); ?></a></h3>
+	</header>
+	<?php
+
+	$render = ob_get_clean();
+
+	return $render;
+}
+
+function render_plural_post_content() {
+	ob_start();
+
+	?>
+	<div class="post__excerpt">
+		<?php the_excerpt(); ?>
+	</div>
+	<?php
+
+	$render = ob_get_clean();
+
+	return $render;
+}
+
+function render_plural_post_footer() {
+	ob_start();
+
+	?>
+	<footer class="post__footer">
+		Meta
+	</footer>
+	<?php
+
+	$render = ob_get_clean();
 
 	return $render;
 }
@@ -32,8 +125,7 @@ function render_page_title() {
 	<h1 class="page-title"><?= get_the_title() ?></h1>
 	
 	<?php
-	$render = ob_get_contents();
-   	ob_end_clean();
+	$render = ob_get_clean();
 
 	return $render;
 }
@@ -42,8 +134,7 @@ function render_page_content() {
 
 	ob_start();
 	the_content();
-	$render = ob_get_contents();
-   	ob_end_clean();
+	$render = ob_get_clean();
 
 	return $render;
 }
@@ -91,8 +182,7 @@ function render_site_nav_toggle() {
 	</button>
 
 	<?php 
-	$render = ob_get_contents();
-   	ob_end_clean();
+	$render = ob_get_clean();
 
    	return $render;
 }
@@ -139,8 +229,7 @@ function render_site_nav() {
 	<?php endif ?>
 
 	<?php 
-	$render = ob_get_contents();
-   	ob_end_clean();
+	$render = ob_get_clean();
 
    	return $render;
 }
@@ -197,8 +286,7 @@ function render_post_nav() {
 	</nav>
 
 	<?php 
-	$render = ob_get_contents();
-   	ob_end_clean();
+	$render = ob_get_clean();
 
    	return $render;
 }
@@ -221,8 +309,7 @@ function render_posts_nav() {
 	<nav><h2>posts navigation</h2></nav>
 
 	<?php 
-	$render = ob_get_contents();
-   	ob_end_clean();
+	$render = ob_get_clean();
 
    	return $render;
 }

@@ -7,110 +7,21 @@ namespace Ejo\Tmpl;
 
 function start_engine() {
 
-	/**
-	 * Setup the system after not before `wp` hook because 
-	 * we need conditional tags to be available
-	 */
-	// add_action( 'wp', __NAMESPACE__ . '\setup_templates' );
-	add_action( 'wp', function() {
+	setup_components();
+}
 
-		register_component( 'site',  		['tag' => 'div', 'inner_wrap' => true] );
-		register_component( 'site-header',  ['tag' => 'header', 'inner_wrap' => true] );
-		register_component( 'site-main',    ['tag' => 'main', 'inner_wrap' => true] );
-		register_component( 'site-footer',  ['tag' => 'footer', 'inner_wrap' => true] );
-		register_component( 'page',         ['tag' => 'article', 'inner_wrap' => true] );
-		register_component( 'page-header',  ['tag' => 'header', 'inner_wrap' => true] );
-		register_component( 'page-content', ['tag' => 'div', 'inner_wrap' => true] );
-		register_component( 'page-footer',  ['tag' => 'footer', 'inner_wrap' => true] );
-
-		register_component( 'site-branding',  ['tag' => 'div'] );
-
-		// add_to_component( 'site', [ 'site-header' ] );
-		add_to_component( 'site', [ 'site-header', 'site-main', 'site-footer' ] );
-		add_to_component( 'site-main', [ 'page' ] );
-		add_to_component( 'site-header', [ 'site-branding', 'fn:render_site_nav_toggle', 'fn:render_site_nav' ] );
-		add_to_component( 'site-footer', [] );
-
-		add_to_component( 'site-branding', function() {
-			
-		} );
-
-		add_filter( 'ejo/tmpl/site-header', function($data) {
-
-			if ($data['parent'] == 'site') {
-				$data['inner_components'] = [ 'site-branding', 'fn:render_site_nav_toggle', 'fn:render_site_nav' ];
-			}
-
-			return $data;
-		});
-
-		if ( is_singular_page() ) {		
-			log('is_singular_page');
-			add_to_component( 'page', [ 'fn:the_post', 'page-header', 'page-content', 'page-footer' ] );
-			add_to_component( 'page-header', [ 'fn:render_page_title' ] );
-			add_to_component( 'page-content', [ 'fn:render_page_content' ] );
-		}
-
-		if ( is_singular_page('post') ) {
-			log('is_singular_page');
-			add_to_component( 'page-footer', [ 'fn:render_post_nav' ] );
-		}
-
-		if ( is_plural_page('post') ) {
-			log('is_plural_page');
-			add_to_component( 'page', [ 'page-header', 'page-content', 'page-footer' ] );
-			add_to_component( 'page-header', [ 'fn:render_page_title' ] );
-			add_to_component( 'page-content', [ 'fn:render_page_content' ] );
-			add_to_component( 'page-footer', [ 'fn:render_posts_nav' ] );
-		}
-	} );
-
-
-	// log(get_components());
-
-
+function setup_components() {
+	require_once( 'components.php' );
 }
 
 function load_template() {
-	require_once( 'template-index.php' );	
+	require_once( 'template-index.php' );
 }
-
-// function setup_templates() {
-
-// 	// add_filter( 'ejo/tmpl/site', function($data) {
-// 	// 	$data['inner_components'] = [ 'site-header', 'site-main', 'site-footer' ];
-
-// 	// 	return $data;
-// 	// });
-
-// 	// add_filter( 'ejo/tmpl/site-header', function($data) {
-// 	// 	$data['inner_components'] = [ 'fn:render_site_branding', 'fn:render_site_nav_toggle', 'fn:render_site_nav' ];
-
-// 	// 	return $data;
-// 	// });
-
-// 	// // add_to_component( 'site', [ 'site-header' ] );
-// 	// add_to_component( 'site', [ 'site-header', 'site-main', 'site-footer' ] );
-// 	// add_to_component( 'site-main', [ 'page' ] );
-// 	// add_to_component( 'page', [ 'fn:the_post', 'page-header', 'page-content', 'page-footer' ] );
-// 	// add_to_component( 'site-header', [ 'fn:render_site_branding', 'fn:render_site_nav_toggle', 'fn:render_site_nav' ] );
-// 	// add_to_component( 'page-header', [ 'fn:render_page_title' ] );
-// 	// add_to_component( 'page-content', [ 'fn:render_page_content' ] );
-
-// 	// add_to_component( 'page-footer', [ 'fn:render_post_nav' ] );
-// }
-
 
 function register_component( $name, $component = [] ) {
 	global $ejo_components;
 
 	$ejo_components[$name] = $component;
-}
-
-function add_to_component( $name, $components ) {
-	global $ejo_components;
-
-	$ejo_components[$name]['inner_components'] = $components;
 }
 
 function get_components() {
@@ -123,6 +34,18 @@ function get_component( $name ) {
 	global $ejo_components;
 
 	return $ejo_components[$name] ?? [];
+}
+
+function get_component_element( $name ) {
+	return get_component($name)['element'] ?? [];
+}
+
+function get_component_content( $name ) {
+	return get_component($name)['content'] ?? [];
+}
+
+function get_component_parents( $name ) {
+	return get_component($name)['parents'] ?? [];
 }
 
 /**
@@ -139,57 +62,144 @@ function is_registered_component( $name ) {
  *
  * Note: A component should be registered first
  */
-function render_component( $name, $parent = null ) {
+function render_component( $name, $parents = [] ) {
 
 	if ( ! is_registered_component( $name ) ) {
 		return;
 	}
-
-	$defaults = [
-		'tag'              => 'div',
-		'inner_wrap'       => false,
-		'extra_classes'    => [],
-		'attributes'       => [],
-		'inner_components' => [],
-		'parent'		   => $parent,
+	
+	$component_defaults = [
+		'name'    => $name,
+		'element' => [
+			'tag'           => false,
+			'extra_classes' => [],
+			'attributes'    => [],
+			'inner_wrap'    => false,
+			'force_display' => false,
+		],
+		'content' => [],
+		'parents' => []
 	];
 
-	// Setup component
-	$data = array_merge( $defaults, get_component($name) );
-	$data = apply_filters( "ejo/tmpl/{$name}", $data );
+	// Get component
+	$component = get_component($name);
+	
+	// Add parents to component
+	$component['parents'] = $parents;
 
-	// log("Component `$name`");
-	// log("Parent `{$data['parent']}`");
-	// log('Inner Components:');
-	// log($data['inner_components']);
+	// Merge/replace defaults with the component
+	$component = array_replace_recursive( $component_defaults, $component );
 
-	// Process component
-	$name             = esc_html( $name );
-	$tag              = esc_html( $data['tag'] );
-	$classes          = trim( $name . ' ' . render_classes($data['extra_classes']) );
-	$attributes       = render_attr( $data['attributes'] );
-	$inner_wrap	      = !! $data['inner_wrap'];
-	$inner_components = $data['inner_components'];
+	// Allow component to be filterable
+	$component = apply_filters( "ejo/tmpl/{$name}", $component );
+	// $component['element'] = apply_filters( "ejo/tmpl/{$name}/element", $component['element'], $component );
+	// $component['content'] = apply_filters( "ejo/tmpl/{$name}/content", $component['content'], $component );
 
-	// Setup render
-	$format_inner_wrap = ( $inner_wrap ) ? sprintf( '<div class="%s">%%s</div>', "{$name}__inner" ) : '%s'; 
-	$format = sprintf( '<%1$s class="%2$s"%3$s>%4$s</%1$s>', $tag, $classes, $attributes, $format_inner_wrap );
+	// log($component);
 
-	$inner_content = '';
+	// Process component data
+	$name                = esc_html( $name );
+	$content             = $component['content'];
+	$parents             = $component['parents'];
 
-	foreach ( $inner_components as $inner_component ) {
-
-		if ( 'fn:' === substr( $inner_component, 0, 3 ) ) {
-			$function = __NAMESPACE__ . '\\' . substr($inner_component, 3, strlen($inner_component));
-
-			// log($function);
-			$inner_content .= $function();
-		}
-		else {
-			$inner_content .= render_component( $inner_component, $name );
-		}
-
+	if ($component['element']) {
+		$element = [
+			'tag'           => esc_html( $component['element']['tag'] ),
+			'classes'       => trim( $name . ' ' . render_classes($component['element']['extra_classes']) ),
+			'attributes'    => render_attr( $component['element']['attributes'] ),
+			'inner_wrap'    => !! $component['element']['inner_wrap'],
+			'force_display' => !! $component['element']['force_display'],
+		];
+	}
+	else {
+		$element = false;
 	}
 
-	return sprintf( $format, $inner_content );
+	// log("Component `$name`. Below its ancestory...");
+	// log($parents);
+	// log('Inner Components:');
+	// log($data['contents']);
+
+
+	// Setup render
+	$render_format = '%s';
+
+	// Start rendering the element which wraps around the content
+	if ($element) {
+
+		// Setup inner wrap render format
+		$render_format_inner_wrap = ( $element['inner_wrap'] ) ? sprintf( '<div class="%s">%%s</div>', "{$name}__inner" ) : '%s'; 
+
+		// Setup render format
+		$render_format = sprintf( 
+			'<%1$s class="%2$s"%3$s>%4$s</%1$s>', 
+			$element['tag'], 
+			$element['classes'], 
+			$element['attributes'], 
+			$render_format_inner_wrap 
+		);
+	}
+
+	$_content = '';
+
+	foreach ( $content as $content_component ) {
+
+		$_parents = $parents;
+		$_parents[] = $name;
+
+		if ( is_registered_component( $content_component ) ) {
+			$_content .= render_component( $content_component, $_parents );
+		}
+		else {
+
+			// Setup function with or without namespace
+			if ( '\\' === substr( $content_component, 0, 1 ) ) {
+				$function = $content_component;
+			}
+			else {
+				$function = __NAMESPACE__ . '\\' . $content_component;
+			}
+
+			if (function_exists($function)) {
+				$_content .= $function();
+			}
+		}
+
+		// elseif ( 'fn:' === substr( $content, 0, 3 ) ) {
+		// 	$function = __NAMESPACE__ . '\\' . substr($content, 3, strlen($content));
+
+		// 	// log($function);
+		// 	$_content .= $function();
+		// }
+	}
+
+	if ( ! $_content && ! $element['force_display'] ) {
+		return '';
+	}
+	else {
+		return sprintf( $render_format, $_content );
+	}
+}
+
+function array_insert_before( array $array, $lookup_value, $insert_value ) {
+
+	$index = array_search( $lookup_value, $array );
+	$index = false === $index ? 0 : $index;
+	return array_merge( array_slice( $array, 0, $index ), [$insert_value], array_slice( $array, $index ) );
+}
+
+function array_insert_after( array $array, $lookup_value, $insert_value ) {
+
+	$index = array_search( $lookup_value, $array );
+	$index = false === $index ? count( $array ) : $index + 1;
+	return array_merge( array_slice( $array, 0, $index ), [$insert_value], array_slice( $array, $index ) );
+}
+
+function remove_value_from_array( array $array, $value ) {
+
+	if (($key = array_search($value, $array)) !== false) {
+	    unset($array[$key]);
+	}
+
+	return $array;
 }

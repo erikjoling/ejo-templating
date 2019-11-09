@@ -17,11 +17,11 @@ function get_nav_location() {
 /**
  * Only setup the post on singular pages
  */
-function the_post() {
-	if ( is_singular() ) {
-		\the_post();
-	}
-}
+// function the_post() {
+// 	if ( is_singular() ) {
+// 		\the_post();
+// 	}
+// }
 
 function get_blog_page() {
 	return get_option('page_for_posts');
