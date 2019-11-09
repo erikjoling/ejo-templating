@@ -6,7 +6,6 @@
 namespace Ejo\Tmpl;
 
 function start_engine() {
-
 	setup_components();
 }
 
@@ -14,112 +13,84 @@ function setup_components() {
 	require_once( 'components.php' );
 }
 
-function load_template() {
-	require_once( 'template-index.php' );
-}
-
-function register_component( $name, $component = [] ) {
-	global $ejo_components;
-
-	$ejo_components[$name] = $component;
-}
-
-function get_components() {
-	global $ejo_components;
-
-	return $ejo_components ?? [];
-}
-
-function get_component( $name ) {
-	global $ejo_components;
-
-	return $ejo_components[$name] ?? [];
-}
-
-function get_component_element( $name ) {
-	return get_component($name)['element'] ?? [];
-}
-
-function get_component_content( $name ) {
-	return get_component($name)['content'] ?? [];
-}
-
-function get_component_parents( $name ) {
-	return get_component($name)['parents'] ?? [];
-}
-
-/**
- * Check if component is registered
- */
-function is_registered_component( $name ) {
-	global $ejo_components;
-
-	return isset($ejo_components[$name]);
-}
-
 /**
  * Render component
  *
  * Note: A component should be registered first
  */
-function render_component( $name, $parents = [] ) {
+function render_component( $name ) {
 
-	if ( ! is_registered_component( $name ) ) {
-		return;
+	global $ejo_component_parents;
+
+	/**
+	 * Setup parent add start of rendering
+	 */
+	if ( empty( $ejo_component_parents ) ) {
+		$ejo_component_parents = [];
 	}
 	
-	$component_defaults = [
-		'name'    => $name,
-		'element' => [
-			'tag'           => false,
+	$component = apply_filters( "ejo/tmpl/{$name}", [] );
+
+	// Process component data
+	$name    = esc_html( $name );
+	$element = $component['element'] ?? false;
+	$content = $component['content'] ?? null;
+
+	// If element is specified process it
+	if ( is_array($element) ) {
+		$element_defaults = [
+			'tag'           => 'div',
 			'extra_classes' => [],
 			'attributes'    => [],
 			'inner_wrap'    => false,
 			'force_display' => false,
-		],
-		'content' => [],
-		'parents' => []
-	];
-
-	// Get component
-	$component = get_component($name);
-	
-	// Add parents to component
-	$component['parents'] = $parents;
-
-	// Merge/replace defaults with the component
-	$component = array_replace_recursive( $component_defaults, $component );
-
-	// Allow component to be filterable
-	$component = apply_filters( "ejo/tmpl/{$name}", $component );
-	// $component['element'] = apply_filters( "ejo/tmpl/{$name}/element", $component['element'], $component );
-	// $component['content'] = apply_filters( "ejo/tmpl/{$name}/content", $component['content'], $component );
-
-	// log($component);
-
-	// Process component data
-	$name                = esc_html( $name );
-	$content             = $component['content'];
-	$parents             = $component['parents'];
-
-	if ($component['element']) {
-		$element = [
-			'tag'           => esc_html( $component['element']['tag'] ),
-			'classes'       => trim( $name . ' ' . render_classes($component['element']['extra_classes']) ),
-			'attributes'    => render_attr( $component['element']['attributes'] ),
-			'inner_wrap'    => !! $component['element']['inner_wrap'],
-			'force_display' => !! $component['element']['force_display'],
 		];
+
+		// Merge/replace defaults with the component
+		$element = array_replace_recursive( $element_defaults, $element );
+
+		// Sanitize
+		$element['tag']           = esc_html( $element['tag'] );
+		$element['classes']       = trim( $name . ' ' . render_classes($element['extra_classes']) );
+		$element['attributes']    = render_attr( $element['attributes'] );
+		$element['inner_wrap']    = !! $element['inner_wrap'];
+		$element['force_display'] = !! $element['force_display'];
+	}
+
+	/**
+	 * This is for component-functions to directly render content
+	 */
+	$content = apply_filters( "ejo/tmpl/{$name}/content", $content );
+
+	// Setup content render
+	$content_render = '';
+
+	if ( is_string($content) ) {
+
+		$content_render .= $content;
+	}
+	elseif ( is_array($content) ) {
+
+		// Add parent before loading components
+		add_current_component_as_parent($name);
+
+		foreach ( $content as $inner_component ) {
+			$content_render .= render_component( $inner_component );
+		}
+
+		// Remove parent before loading components
+		remove_current_component_as_parent($name);
+	}
+
+	if ( ! $content_render && ! $element['force_display'] ) {
+		return '';
 	}
 	else {
-		$element = false;
+		return sprintf( render_element_format( $element, $name ), $content_render );
 	}
+}
 
-	// log("Component `$name`. Below its ancestory...");
-	// log($parents);
-	// log('Inner Components:');
-	// log($data['contents']);
-
+function render_element_format( $element, $name ) {
 
 	// Setup render
 	$render_format = '%s';
@@ -140,45 +111,49 @@ function render_component( $name, $parents = [] ) {
 		);
 	}
 
-	$_content = '';
+	return $render_format;
+}
 
-	foreach ( $content as $content_component ) {
+function get_component_parents() {
+	global $ejo_component_parents;
 
-		$_parents = $parents;
-		$_parents[] = $name;
+	return $ejo_component_parents;
+}
 
-		if ( is_registered_component( $content_component ) ) {
-			$_content .= render_component( $content_component, $_parents );
-		}
-		else {
+function add_current_component_as_parent( $name ) {
+	global $ejo_component_parents;
 
-			// Setup function with or without namespace
-			if ( '\\' === substr( $content_component, 0, 1 ) ) {
-				$function = $content_component;
-			}
-			else {
-				$function = __NAMESPACE__ . '\\' . $content_component;
-			}
+	$ejo_component_parents[] = $name;
+	// ksort($ejo_component_parents);
+}
 
-			if (function_exists($function)) {
-				$_content .= $function();
-			}
-		}
+function remove_current_component_as_parent( $name ) {
+	global $ejo_component_parents;
 
-		// elseif ( 'fn:' === substr( $content, 0, 3 ) ) {
-		// 	$function = __NAMESPACE__ . '\\' . substr($content, 3, strlen($content));
+	$ejo_component_parents = remove_value_from_array( $ejo_component_parents, $name );
+	// ksort($ejo_component_parents);
+}
 
-		// 	// log($function);
-		// 	$_content .= $function();
-		// }
-	}
-
-	if ( ! $_content && ! $element['force_display'] ) {
-		return '';
+function component_prepend( &$components, $value, $prepend_before = null ) {
+	if ($prepend_before) {
+		$components = array_insert_before($components, $prepend_before, $value);
 	}
 	else {
-		return sprintf( $render_format, $_content );
+		array_unshift($components, $value);
 	}
+}
+
+function component_append( &$components, $value, $prepend_after = null ) {
+	if ($prepend_after) {
+		$components = array_insert_after($components, $prepend_after, $value);
+	}
+	else {
+		array_push($components, $value);
+	}
+}
+
+function component_remove( &$components, $lookup_value ) {
+	$components = remove_value_from_array($components, $lookup_value);
 }
 
 function array_insert_before( array $array, $lookup_value, $insert_value ) {

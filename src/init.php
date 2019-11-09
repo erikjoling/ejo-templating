@@ -13,3 +13,5 @@ require_once __DIR__ . '/functions-templating-classes.php';
 require_once __DIR__ . '/functions-templating-helpers.php';
 require_once __DIR__ . '/functions-templating.php';
 require_once __DIR__ . '/functions-templating-setup.php';
+
+require_once __DIR__ . '/functions-filters.php';

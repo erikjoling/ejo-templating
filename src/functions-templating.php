@@ -5,6 +5,31 @@
 
 namespace Ejo\Tmpl;
 
+function render_site() {
+
+	ob_start();
+
+	?>
+	<!doctype html>
+	<html <?= display_html_attr(); ?>>
+
+	<head>
+		<?php wp_head(); ?>
+	</head>
+
+	<body class="<?php display_body_classes(); ?>">
+
+		<?php echo render_component( 'site' ); ?>
+
+		<?php wp_footer(); ?>
+		
+	</body>
+
+	</html>
+	<?php
+
+	return ob_get_clean();
+}
 
 function render_site_branding() {
 
@@ -18,9 +43,7 @@ function render_site_branding() {
 	</div>
 	
 	<?php
-	$render = ob_get_clean();
-
-	return $render;
+	return ob_get_clean();
 }
 
 function render_breadcrumbs() {
@@ -31,11 +54,25 @@ function render_breadcrumbs() {
 	Breadcrumbs
 	
 	<?php
-	$render = ob_get_clean();
-
-	return $render;
+	return ob_get_clean();
 }
 
+
+function render_page_title() {
+
+	ob_start();
+	?>
+
+	<h1 class="page-title"><?= get_page_title() ?></h1>
+	
+	<?php
+	return ob_get_clean();
+}
+
+function render_page_content() {
+
+	return get_page_content();
+}
 
 function render_post_archive_loop() {
 	$render = '';
@@ -47,13 +84,10 @@ function render_post_archive_loop() {
 		echo render_plural_post();
 	}
 	
-	$render = ob_get_clean();
-
-	return $render;
+	return ob_get_clean();
 }
 
 function render_plural_post() {
-	log('render_plural_post');
 
 	ob_start();
 	?>
@@ -69,13 +103,11 @@ function render_plural_post() {
 	</article>
 	
 	<?php
-	$render = ob_get_clean();
-
-	return $render;
+	return ob_get_clean();
 }
 
 function render_plural_post_header() {
-	log('render_plural_post_header');
+
 	ob_start();
 
 	?>
@@ -84,9 +116,7 @@ function render_plural_post_header() {
 	</header>
 	<?php
 
-	$render = ob_get_clean();
-
-	return $render;
+	return ob_get_clean();
 }
 
 function render_plural_post_content() {
@@ -98,9 +128,7 @@ function render_plural_post_content() {
 	</div>
 	<?php
 
-	$render = ob_get_clean();
-
-	return $render;
+	return ob_get_clean();
 }
 
 function render_plural_post_footer() {
@@ -112,31 +140,7 @@ function render_plural_post_footer() {
 	</footer>
 	<?php
 
-	$render = ob_get_clean();
-
-	return $render;
-}
-
-function render_page_title() {
-
-	ob_start();
-	?>
-
-	<h1 class="page-title"><?= get_the_title() ?></h1>
-	
-	<?php
-	$render = ob_get_clean();
-
-	return $render;
-}
-
-function render_page_content() {
-
-	ob_start();
-	the_content();
-	$render = ob_get_clean();
-
-	return $render;
+	return ob_get_clean();
 }
 
 
@@ -313,4 +317,3 @@ function render_posts_nav() {
 
    	return $render;
 }
-
