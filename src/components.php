@@ -33,11 +33,11 @@ add_action( 'wp', function() {
 	});
 
 	add_filter( 'ejo/tmpl/page/element', function( $element ) {
-		return [ 'tag' => 'article', 'inner_wrap' => true, 'force_display' => true ];
+		return [ 'tag' => 'article', 'inner_wrap' => true, 'force_display' => true, 'is_bem_block' => true ];
 	});
 
 	add_filter( 'ejo/tmpl/page-header/element', function( $element ) {
-		return [ 'tag' => 'header', 'inner_wrap' => true, 'force_display' => true ];
+		return [ 'tag' => 'header', 'inner_wrap' => true, 'force_display' => true, 'bem_element' => 'header', 'is_bem_block' => true ];
 	});
 
 	add_filter( 'ejo/tmpl/page-main/element', function( $element ) {

@@ -21,12 +21,20 @@ function setup_components() {
 function render_component( $name ) {
 
 	global $ejo_component_parents;
+	global $ejo_component_bem_blocks;
 
 	/**
 	 * Setup parent add start of rendering
 	 */
 	if ( empty( $ejo_component_parents ) ) {
 		$ejo_component_parents = [];
+	}
+
+	/**
+	 * Setup bem block add start of rendering
+	 */
+	if ( empty( $ejo_component_bem_blocks ) ) {
+		$ejo_component_bem_blocks = [];
 	}
 
 	/**
@@ -50,6 +58,9 @@ function render_component( $name ) {
 			'attributes'    => [],
 			'inner_wrap'    => false,
 			'force_display' => false,
+			'bem_block'     => $name,
+			'is_bem_block'  => false,
+			'bem_element' => false,
 		];
 
 		// Merge/replace defaults with the component
@@ -57,10 +68,26 @@ function render_component( $name ) {
 
 		// Sanitize
 		$element['tag']           = esc_html( $element['tag'] );
-		$element['classes']       = trim( $name . ' ' . render_classes($element['extra_classes']) );
+		$element['extra_classes'] = (array) $element['extra_classes'];
 		$element['attributes']    = render_attr( $element['attributes'] );
 		$element['inner_wrap']    = !! $element['inner_wrap'];
 		$element['force_display'] = !! $element['force_display'];
+		$element['bem_block']     = $name;
+		$element['is_bem_block']  = !! $element['is_bem_block'];
+		$element['bem_element']   = $element['bem_element'];
+
+		// Setup classes
+		$element['classes'] = [$element['bem_block']];
+		if ( $element['bem_element'] && has_component_bem_block_parent() ) {
+			$element['classes'][] = get_current_component_bem_block_parent() . "__{$element['bem_element']}";
+		}
+		$element['classes'] += $element['extra_classes'];
+		$element['classes'] = render_classes($element['classes']);
+
+		log($name);
+		log($element);
+		log(get_component_bem_blocks());
+		log('----------------------------');
 	}
 
 
@@ -76,11 +103,18 @@ function render_component( $name ) {
 		// Add parent before loading components
 		add_current_component_as_parent($name);
 
+		if ( $element['is_bem_block'] ) {
+			add_current_component_as_bem_block($name);
+		}
+
 		foreach ( $content as $inner_component ) {
 			$content_render .= render_component( $inner_component );
 		}
 
-		// Remove parent before loading components
+		// Remove bem block
+		remove_current_component_as_bem_block($name);
+
+		// Remove parent
 		remove_current_component_as_parent($name);
 	}
 
@@ -92,7 +126,7 @@ function render_component( $name ) {
 	}
 }
 
-function render_element_format( $element, $name ) {
+function render_element_format( $element ) {
 
 	// Setup render
 	$render_format = '%s';
@@ -101,7 +135,7 @@ function render_element_format( $element, $name ) {
 	if ($element) {
 
 		// Setup inner wrap render format
-		$render_format_inner_wrap = ( $element['inner_wrap'] ) ? sprintf( '<div class="%s">%%s</div>', "{$name}__inner" ) : '%s'; 
+		$render_format_inner_wrap = ( $element['inner_wrap'] ) ? sprintf( '<div class="%s">%%s</div>', "{$element['bem_block']}__inner" ) : '%s'; 
 
 		// Setup render format
 		$render_format = sprintf( 
@@ -138,6 +172,38 @@ function remove_current_component_as_parent( $name ) {
 
 	$ejo_component_parents = remove_value_from_array( $ejo_component_parents, $name );
 	// ksort($ejo_component_parents);
+}
+
+function get_component_bem_blocks() {
+	global $ejo_component_bem_blocks;
+
+	return $ejo_component_bem_blocks;
+}
+
+
+function has_component_bem_block_parent() {
+	return ! empty(get_component_bem_blocks());
+}
+
+function get_current_component_bem_block_parent() {
+	$bem_blocks = get_component_bem_blocks();
+
+	return end($bem_blocks); reset($bem_blocks);
+}
+
+
+function add_current_component_as_bem_block( $name ) {
+	global $ejo_component_bem_blocks;
+
+	$ejo_component_bem_blocks[] = $name;
+	// ksort($ejo_component_bem_blocks);
+}
+
+function remove_current_component_as_bem_block( $name ) {
+	global $ejo_component_bem_blocks;
+
+	$ejo_component_bem_blocks = remove_value_from_array( $ejo_component_bem_blocks, $name );
+	// ksort($ejo_component_bem_blocks);
 }
 
 function component_prepend( &$components, $value, $prepend_before = null ) {
