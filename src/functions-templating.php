@@ -143,6 +143,17 @@ function render_plural_post_footer() {
 	return ob_get_clean();
 }
 
+function render_author() {
+
+	ob_start();
+	?>
+
+	Erik Joling
+	
+	<?php
+	return ob_get_clean();
+}
+
 
 /**
  * Render the footer line

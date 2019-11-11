@@ -59,8 +59,7 @@ function render_component( $name ) {
 			'inner_wrap'    => false,
 			'force_display' => false,
 			'bem_block'     => $name,
-			'is_bem_block'  => false,
-			'bem_element' => false,
+			'bem_element'   => false,
 		];
 
 		// Merge/replace defaults with the component
@@ -72,15 +71,28 @@ function render_component( $name ) {
 		$element['attributes']    = render_attr( $element['attributes'] );
 		$element['inner_wrap']    = !! $element['inner_wrap'];
 		$element['force_display'] = !! $element['force_display'];
-		$element['bem_block']     = $name;
-		$element['is_bem_block']  = !! $element['is_bem_block'];
-		$element['bem_element']   = $element['bem_element'];
 
 		// Setup classes
-		$element['classes'] = [$element['bem_block']];
-		if ( $element['bem_element'] && has_component_bem_block_parent() ) {
-			$element['classes'][] = get_current_component_bem_block_parent() . "__{$element['bem_element']}";
+		$element['classes'] = [];
+
+		if ($element['bem_block']) {
+			$element['classes'][] = $element['bem_block'];
 		}
+
+		// Only do stuff with BEM element if it has a BEM block parent
+		if ( $element['bem_element'] ) {
+
+			$bem_element = $element['bem_element'];
+
+			// If bem_element is set to true automatically set bem_block as bem_element
+			if ( $element['bem_element'] === true ) {
+				$bem_element = $element['bem_block'] ? $element['bem_block'] : $name;
+			}
+
+			// Add BEM element as class
+			$element['classes'][] = get_current_component_bem_block_parent() . "__{$bem_element}";
+		}
+
 		$element['classes'] += $element['extra_classes'];
 		$element['classes'] = render_classes($element['classes']);
 
@@ -103,7 +115,7 @@ function render_component( $name ) {
 		// Add parent before loading components
 		add_current_component_as_parent($name);
 
-		if ( $element['is_bem_block'] ) {
+		if ( $element['bem_block'] ) {
 			add_current_component_as_bem_block($name);
 		}
 
@@ -134,8 +146,16 @@ function render_element_format( $element ) {
 	// Start rendering the element which wraps around the content
 	if ($element) {
 
-		// Setup inner wrap render format
-		$render_format_inner_wrap = ( $element['inner_wrap'] ) ? sprintf( '<div class="%s">%%s</div>', "{$element['bem_block']}__inner" ) : '%s'; 
+		$render_format_inner_wrap = '%s';
+
+		if ( $element['inner_wrap']	) {
+			$inner_class = ( $element['bem_block'] ) ? "{$element['bem_block']}__inner" : 'inner';
+			// $inner_class = $inner_class ? "{$inner_class}__inner" : 'inner';
+
+			// Setup inner wrap render format
+			$render_format_inner_wrap = sprintf( '<div class="%s">%%s</div>', $inner_class );
+		}
+
 
 		// Setup render format
 		$render_format = sprintf( 
