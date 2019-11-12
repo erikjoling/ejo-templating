@@ -56,6 +56,31 @@ add_action( 'wp', function() {
 		return [ 'tag' => 'h1' ];
 	});
 
+	# Plural Post
+
+	add_filter( 'ejo/tmpl/plural-post/element', function( $element ) {
+		return [ 'tag' => 'article' ];
+	});
+
+	add_filter( 'ejo/tmpl/plural-post-header/element', function( $element ) {
+		return [ 'tag' => 'header', 'bem_block' => false, 'bem_element' => 'header' ];
+	});
+
+	add_filter( 'ejo/tmpl/plural-post-main/element', function( $element ) {
+		return [ 'tag' => 'div', 'bem_block' => false, 'bem_element' => 'main' ];
+	});
+
+	add_filter( 'ejo/tmpl/plural-post-footer/element', function( $element ) {
+		return [ 'tag' => 'footer', 'bem_block' => false, 'bem_element' => 'footer' ];
+	});
+
+	// Hoe omgaan met link?
+	// add_filter( 'ejo/tmpl/plural-post-title/element', function( $element ) {
+	// 	return [ 'tag' => 'h3', 'bem_block' => false, 'bem_element' => 'title' ];
+	// });
+
+	# Post Meta
+
 	add_filter( 'ejo/tmpl/post-meta/element', function( $element ) {
 		return [ 'tag' => 'div', 'inner_wrap' => true ];
 	});
@@ -95,6 +120,14 @@ add_action( 'wp', function() {
 		return [ 'page-content' ];
 	});
 
+	add_filter( 'ejo/tmpl/plural-post/content', function( $content ) {
+		return [ 'plural-post-header', 'plural-post-main', 'plural-post-footer' ];
+	});
+
+	add_filter( 'ejo/tmpl/plural-post-main/content', function( $content ) {
+		return [ 'plural-post-content' ];
+	});
+
 	# Small components
 
 	add_filter( 'ejo/tmpl/post-meta/content', function( $content ) {
@@ -114,6 +147,9 @@ add_action( 'wp', function() {
 	add_filter( 'ejo/tmpl/breadcrumbs/content', __NAMESPACE__ . '\render_breadcrumbs' );
 	add_filter( 'ejo/tmpl/the-post/content', '\the_post' );
 	add_filter( 'ejo/tmpl/the-post-loop/content', __NAMESPACE__ . '\render_post_archive_loop' );
+	add_filter( 'ejo/tmpl/plural-post-header/content', __NAMESPACE__ . '\render_plural_post_title' );
+	add_filter( 'ejo/tmpl/plural-post-content/content', __NAMESPACE__ . '\render_plural_post_content' );
+	// add_filter( 'ejo/tmpl/plural-post-footer/content', __NAMESPACE__ . '\render_post_meta' );
 
 	// Post Meta
 	add_filter( 'ejo/tmpl/author/content', __NAMESPACE__ . '\render_author' );
@@ -190,7 +226,7 @@ add_action( 'wp', function() {
 
 	add_filter( 'ejo/tmpl/page-title/element', function( $element ) {
 
-		if (has_component_parent('page-footer')) {
+		if (is_component_child('page-footer')) {
 			$element['tag'] = 'h3';
 		}
 

@@ -20,33 +20,15 @@ function setup_components() {
  */
 function render_component( $name ) {
 
-	global $ejo_component_parents;
-	global $ejo_component_bem_blocks;
+	// Sanitize component data
+	$name = esc_html( $name );
 
-	/**
-	 * Setup parent add start of rendering
-	 */
-	if ( empty( $ejo_component_parents ) ) {
-		$ejo_component_parents = [];
-	}
-
-	/**
-	 * Setup bem block add start of rendering
-	 */
-	if ( empty( $ejo_component_bem_blocks ) ) {
-		$ejo_component_bem_blocks = [];
-	}
-
-	/**
-	 * Prevent a component to be it's own parent
-	 */ 
-	if ( has_component_parent($name) ) {
-		log("Fout: $name is eigen ouder");
+	// Prevent a component to be a child itself (infinite loop)
+	if ( is_component_child($name) ) {
 		return '';
 	}
 
-	// Process component data
-	$name    = esc_html( $name );
+	// Allow filters
 	$element = apply_filters( "ejo/tmpl/{$name}/element", false );
 	$content = apply_filters( "ejo/tmpl/{$name}/content", null );
 
@@ -63,7 +45,7 @@ function render_component( $name ) {
 		];
 
 		// Merge/replace defaults with the component
-		$element = array_replace_recursive( $element_defaults, $element );
+		$element = array_replace( $element_defaults, $element );
 
 		// Sanitize
 		$element['tag']           = esc_html( $element['tag'] );
@@ -90,16 +72,16 @@ function render_component( $name ) {
 			}
 
 			// Add BEM element as class
-			$element['classes'][] = get_current_component_bem_block_parent() . "__{$bem_element}";
+			$element['classes'][] = get_current_component_parent() . "__{$bem_element}";
 		}
 
 		$element['classes'] += $element['extra_classes'];
 		$element['classes'] = render_classes($element['classes']);
 
-		log($name);
-		log($element);
-		log(get_component_bem_blocks());
-		log('----------------------------');
+		// log($name);
+		// log($element);
+		// log(get_component_parents());
+		// log('----------------------------');
 	}
 
 
@@ -112,22 +94,20 @@ function render_component( $name ) {
 	}
 	elseif ( is_array($content) ) {
 
-		// Add parent before loading components
-		add_current_component_as_parent($name);
 
+		// Only add current component as parent if it's defined as a BEM-block
 		if ( $element['bem_block'] ) {
-			add_current_component_as_bem_block($name);
+			add_current_component_as_parent($name);
 		}
 
 		foreach ( $content as $inner_component ) {
 			$content_render .= render_component( $inner_component );
 		}
 
-		// Remove bem block
-		remove_current_component_as_bem_block($name);
-
-		// Remove parent
-		remove_current_component_as_parent($name);
+		// Only remove current component as parent if it's defined as a BEM-block
+		if ( $element['bem_block'] ) {
+			remove_current_component_as_parent($name);
+		}
 	}
 
 	if ( ! $content_render && ! $element['force_display'] ) {
@@ -149,8 +129,9 @@ function render_element_format( $element ) {
 		$render_format_inner_wrap = '%s';
 
 		if ( $element['inner_wrap']	) {
+
+			// Decide the classname of 'inner' based on whether it's a BEM-block
 			$inner_class = ( $element['bem_block'] ) ? "{$element['bem_block']}__inner" : 'inner';
-			// $inner_class = $inner_class ? "{$inner_class}__inner" : 'inner';
 
 			// Setup inner wrap render format
 			$render_format_inner_wrap = sprintf( '<div class="%s">%%s</div>', $inner_class );
@@ -171,60 +152,40 @@ function render_element_format( $element ) {
 }
 
 function get_component_parents() {
-	global $ejo_component_parents;
+	global $ejo_tmpl_component_parents;
 
-	return $ejo_component_parents;
+	// Make sure it's always an array
+	if (! is_array($ejo_tmpl_component_parents)) {
+		$ejo_tmpl_component_parents = [];
+	}
+
+	return $ejo_tmpl_component_parents;
 }
 
-function has_component_parent( $parent ) {
-	return in_array($parent, get_component_parents());
+function is_component_child( $name ) {
+	return in_array($name, get_component_parents());
+}
+
+function get_current_component_parent() {
+	$parents = get_component_parents();
+
+	return end($parents); reset($parents);
 }
 
 function add_current_component_as_parent( $name ) {
-	global $ejo_component_parents;
+	global $ejo_tmpl_component_parents;
 
-	$ejo_component_parents[] = $name;
-	// ksort($ejo_component_parents);
+	$ejo_tmpl_component_parents[] = $name;
+	// ksort($ejo_tmpl_component_parents);
 }
 
 function remove_current_component_as_parent( $name ) {
-	global $ejo_component_parents;
+	global $ejo_tmpl_component_parents;
 
-	$ejo_component_parents = remove_value_from_array( $ejo_component_parents, $name );
-	// ksort($ejo_component_parents);
+	$ejo_tmpl_component_parents = remove_value_from_array( $ejo_tmpl_component_parents, $name );
+	// ksort($ejo_tmpl_component_parents);
 }
 
-function get_component_bem_blocks() {
-	global $ejo_component_bem_blocks;
-
-	return $ejo_component_bem_blocks;
-}
-
-
-function has_component_bem_block_parent() {
-	return ! empty(get_component_bem_blocks());
-}
-
-function get_current_component_bem_block_parent() {
-	$bem_blocks = get_component_bem_blocks();
-
-	return end($bem_blocks); reset($bem_blocks);
-}
-
-
-function add_current_component_as_bem_block( $name ) {
-	global $ejo_component_bem_blocks;
-
-	$ejo_component_bem_blocks[] = $name;
-	// ksort($ejo_component_bem_blocks);
-}
-
-function remove_current_component_as_bem_block( $name ) {
-	global $ejo_component_bem_blocks;
-
-	$ejo_component_bem_blocks = remove_value_from_array( $ejo_component_bem_blocks, $name );
-	// ksort($ejo_component_bem_blocks);
-}
 
 function component_prepend( &$components, $value, $prepend_before = null ) {
 	$components = ( is_array($components) ) ? $components : [];

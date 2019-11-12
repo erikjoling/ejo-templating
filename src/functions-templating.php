@@ -46,6 +46,16 @@ function render_site_branding() {
 	return ob_get_clean();
 }
 
+function render_site_title() {
+
+	ob_start();
+	?>
+		<a class="site-branding__link" href="<?= home_url() ?>" rel="home"><?= get_bloginfo( 'name', 'display' ) ?></a>
+		
+	<?php
+	return ob_get_clean();
+}
+
 function render_breadcrumbs() {
 
 	ob_start();
@@ -81,39 +91,19 @@ function render_post_archive_loop() {
 	
 	while ( have_posts() ) {
 		the_post();
-		echo render_plural_post();
+
+		echo render_component('plural-post');
 	}
 	
 	return ob_get_clean();
 }
 
-function render_plural_post() {
-
-	ob_start();
-	?>
-
-	<article class="post post--plural">
-		<div class="post__inner">
-			
-			<?php echo render_plural_post_header(); ?>
-			<?php echo render_plural_post_content(); ?>
-			<?php echo render_plural_post_footer(); ?>
-
-		</div>
-	</article>
-	
-	<?php
-	return ob_get_clean();
-}
-
-function render_plural_post_header() {
+function render_plural_post_title() {
 
 	ob_start();
 
 	?>
-	<header class="post__header">
-		<h3><a href="<?php the_permalink() ?>" class=""><?php the_title(); ?></a></h3>
-	</header>
+	<h3><a href="<?php the_permalink() ?>" class=""><?php the_title(); ?></a></h3>
 	<?php
 
 	return ob_get_clean();
@@ -123,21 +113,7 @@ function render_plural_post_content() {
 	ob_start();
 
 	?>
-	<div class="post__excerpt">
-		<?php the_excerpt(); ?>
-	</div>
-	<?php
-
-	return ob_get_clean();
-}
-
-function render_plural_post_footer() {
-	ob_start();
-
-	?>
-	<footer class="post__footer">
-		Meta
-	</footer>
+	<?php the_excerpt(); ?>
 	<?php
 
 	return ob_get_clean();
