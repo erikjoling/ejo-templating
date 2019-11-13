@@ -56,45 +56,116 @@ add_action( 'wp', function() {
 	 * First setting up the ELEMENT of each component
 	 */
 
-	# Big layout components
-
-	add_filter( 'ejo/tmpl/site/element', function( $element ) {
-		return [ 'tag' => 'div', 'inner_wrap' => true ];
+	add_filter( 'ejo/tmpl/component/site', function( $component ) {
+		return [ 
+			'element' => [ 'tag' => 'div', 'inner_wrap' => true ],
+			'content' => [ 'site-header', 'site-main' ]
+		];
 	});
 
-	add_filter( 'ejo/tmpl/site-header/element', function( $element ) {
-		return [ 'tag' => 'header', 'inner_wrap' => true, 'force_display' => true ];
+	add_filter( 'ejo/tmpl/component/site-header', function( $component ) {
+		return [ 
+			'element' => [ 'tag' => 'header', 'inner_wrap' => true, 'force_display' => true ],
+			'content' => [ 'site-branding', 'site-nav-toggle', 'site-nav' ]
+		];
 	});
 
-	add_filter( 'ejo/tmpl/site-main/element', function( $element ) {
-		return [ 'tag' => 'main', 'inner_wrap' => true, 'force_display' => true ];
+	add_filter( 'ejo/tmpl/component/site-main', function( $component ) {
+		return [ 
+			'element' => [ 'tag' => 'main', 'inner_wrap' => true, 'force_display' => true ],
+			'content' => [ 'page' ]
+		];
 	});
 
-	add_filter( 'ejo/tmpl/site-footer/element', function( $element ) {
-		return [ 'tag' => 'footer', 'inner_wrap' => true, 'force_display' => true ];
+	add_filter( 'ejo/tmpl/component/site-footer', function( $component ) {
+		return [ 
+			'element' => [ 'tag' => 'footer', 'inner_wrap' => true, 'force_display' => true ],
+			'content' => []
+		];
 	});
 
-	add_filter( 'ejo/tmpl/page/element', function( $element ) {
-		return [ 'tag' => 'article', 'inner_wrap' => true, 'force_display' => true ];
+	add_filter( 'ejo/tmpl/component/page', function( $component ) {
+		return [ 
+			'element' => [ 'tag' => 'article', 'inner_wrap' => true, 'force_display' => true ],
+			'content' => [ 'the-post', 'page-header', 'page-main', 'page-footer' ]
+		];
 	});
 
-	add_filter( 'ejo/tmpl/page-header/element', function( $element ) {
-		return [ 'tag' => 'header', 'inner_wrap' => true, 'force_display' => true ];
+	add_filter( 'ejo/tmpl/component/page-header', function( $component ) {
+		return [ 
+			'element' => [ 'tag' => 'header', 'inner_wrap' => true, 'force_display' => true ],
+			'content' => [ 'breadcrumbs', 'page-title' ]
+		];
 	});
 
-	add_filter( 'ejo/tmpl/page-main/element', function( $element ) {
-		return [ 'tag' => 'div', 'inner_wrap' => true, 'force_display' => true ];
+	add_filter( 'ejo/tmpl/component/page-main', function( $component ) {
+		return [ 
+			'element' => [ 'tag' => 'div', 'inner_wrap' => true, 'force_display' => true ],
+			'content' => [ 'page-content' ]
+		];
 	});
 
-	add_filter( 'ejo/tmpl/page-footer/element', function( $element ) {
-		return [ 'tag' => 'footer', 'inner_wrap' => true ];
+	add_filter( 'ejo/tmpl/component/page-footer', function( $component ) {
+		return [ 
+			'element' => [ 'tag' => 'footer', 'inner_wrap' => true ],
+			'content' => []
+		];
 	});
+
 
 	# Small components
 
-	add_filter( 'ejo/tmpl/page-title/element', function( $element ) {
-		return [ 'tag' => 'h1' ];
+	add_filter( 'ejo/tmpl/component/site-nav-toggle', function( $components ) {
+		return [ 
+			'content' => __NAMESPACE__ . '\render_site_nav_toggle'
+		];
 	});
+
+	add_filter( 'ejo/tmpl/component/site-nav', function( $components ) {
+		return [ 
+			'content' => __NAMESPACE__ . '\render_site_nav'
+		];
+	});
+
+	add_filter( 'ejo/tmpl/component/page-title', function( $components ) {
+		return [ 
+			'element' => [ 'tag' => 'h1', 'bem_element' => 'title' ],
+			'content' => __NAMESPACE__ . '\get_page_title'
+		];
+	});
+
+	add_filter( 'ejo/tmpl/component/page-content', function( $components ) {
+		return [ 
+			'content' => __NAMESPACE__ . '\render_page_content'
+		];
+	});
+
+	add_filter( 'ejo/tmpl/component/breadcrumbs', function( $components ) {
+		return [ 
+			'content' => __NAMESPACE__ . '\render_breadcrumbs'
+		];
+	});
+
+
+	add_filter( 'ejo/tmpl/component/the-post', function( $components ) {
+		return [ 
+			'content' => '\the_post'
+		];
+	});
+	// add_filter( 'ejo/tmpl/the-post-loop/content', __NAMESPACE__ . '\render_post_archive_loop' );
+	// add_filter( 'ejo/tmpl/plural-post-header/content', __NAMESPACE__ . '\render_plural_post_title' );
+	// add_filter( 'ejo/tmpl/plural-post-content/content', __NAMESPACE__ . '\render_plural_post_content' );
+	// // add_filter( 'ejo/tmpl/plural-post-footer/content', __NAMESPACE__ . '\render_post_meta' );
+
+	add_filter( 'ejo/tmpl/component/site-branding', function( $component ) {
+		return [ 
+			'content' => __NAMESPACE__ . '\\render_site_branding'
+		];
+	});
+
+
+
+
 
 	# Plural Post
 
@@ -135,30 +206,6 @@ add_action( 'wp', function() {
 	 */
 
 	# Big site components
-
-	add_filter( 'ejo/tmpl/site/content', function( $content ) {
-		return [ 'site-header', 'site-main' ];
-	});
-
-	add_filter( 'ejo/tmpl/site-header/content', function( $content ) {
-		return [ 'site-branding', 'site-nav-toggle', 'site-nav' ];
-	});
-
-	add_filter( 'ejo/tmpl/site-main/content', function( $content ) {
-		return [ 'page' ];
-	});
-
-	add_filter( 'ejo/tmpl/page/content', function( $content ) {
-		return [ 'the-post', 'page-header', 'page-main', 'page-footer' ];
-	});
-
-	add_filter( 'ejo/tmpl/page-header/content', function( $content ) {
-		return [ 'breadcrumbs', 'page-title' ];
-	});
-
-	add_filter( 'ejo/tmpl/page-main/content', function( $content ) {
-		return [ 'page-content' ];
-	});
 
 	add_filter( 'ejo/tmpl/plural-post/content', function( $content ) {
 		return [ 'plural-post-header', 'plural-post-main', 'plural-post-footer' ];
@@ -238,9 +285,12 @@ add_action( 'wp', function() {
  * Test
  */ 
 add_action( 'wp', function() {
-	global $ejo_tmpl_components;
+	$components = get_components();
 
-	$ejo_tmpl_components = register_component('site');
+	// Register site as first component
+	$components[] = setup_component('site');
 
-	log($ejo_tmpl_components);
+	set_components($components);
+
+	log($components);
 });

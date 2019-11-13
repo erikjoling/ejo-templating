@@ -19,7 +19,15 @@ function render_site() {
 
 	<body class="<?php display_body_classes(); ?>">
 
-		<?php echo render_component( 'site' ); ?>
+		<?php 
+
+		$components = \Ejo\Tmpl\get_components();
+
+		foreach ($components as $component) {
+			echo \Ejo\Tmpl\render_component($component);
+		}
+
+		?>
 
 		<?php wp_footer(); ?>
 		

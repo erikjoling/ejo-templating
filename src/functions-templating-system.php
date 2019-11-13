@@ -14,173 +14,37 @@ function setup_components() {
 }
 
 /**
- * Register component
- *
- * Note: A component should be registered first
+ * Setting up component
  */
-function register_component( $name ) {
+function setup_component( $name ) {
 
 	// Sanitize component data
 	$name = esc_html( $name );
 
-	// Allow filters
-	$element = apply_filters( "ejo/tmpl/{$name}/element", false );
-	$content = apply_filters( "ejo/tmpl/{$name}/content", null );
+	$component = apply_filters( "ejo/tmpl/component/{$name}", [], $name );
 
 	return [
-		'name' => $name, 
-		'element' => $element, 
-		'content' => setup_component_content($content)
+		'name'    => $name,
+		'element' => (isset($component['element'])) ? setup_component_element($component['element']) : false,
+		'content' => (isset($component['content'])) ? setup_component_content($component['content']) : false
 	];
 }
 
-function setup_component_content( $content ) {
-
-	$_content = '';
-
-	// Function
-	if ( is_string($content) ) {
-		$_content = 'function';
-	}
-	// Array of content
-	elseif ( is_array($content) ) {
-
-		$_content = [];
-		foreach ( $content as $subcomponent ) {
-			$_content[] = register_component( $subcomponent );
-		}
-	}
-
-	return $_content;
-}
-
-// function render_component() {
-// 	global $ejo_tmpl_components;
-
-// 	foreach ($ejo_tmpl_components as $component) {
-// 		# code...
-// 	}
-
-// }
-
-/**
- * Render component
- *
- * Note: A component should be registered first
- */
-function render_component( $name ) {
-
-	// Sanitize component data
-	$name = esc_html( $name );
-
-	// Prevent a component to be a child itself (infinite loop)
-	if ( is_component_child($name) ) {
-		return '';
-	}
+function setup_component_element( $element ) {
 
 	// If element is specified process it
 	if ( is_array($element) ) {
-		$element_defaults = [
+
+		// Merge/replace defaults with the component
+		$element = wp_parse_args( $element, [
 			'tag'           => 'div',
 			'extra_classes' => [],
 			'attributes'    => [],
 			'inner_wrap'    => false,
 			'force_display' => false,
-			'bem_block'     => $name,
+			'bem_block'     => true,
 			'bem_element'   => false,
-		];
-
-		// Merge/replace defaults with the component
-		$element = array_replace( $element_defaults, $element );
-
-		// Sanitize
-		$element['tag']           = esc_html( $element['tag'] );
-		$element['extra_classes'] = (array) $element['extra_classes'];
-		$element['attributes']    = render_attr( $element['attributes'] );
-		$element['inner_wrap']    = !! $element['inner_wrap'];
-		$element['force_display'] = !! $element['force_display'];
-
-		// Setup classes
-		$element['classes'] = [];
-
-		if ($element['bem_block']) {
-			$element['classes'][] = $element['bem_block'];
-		}
-
-		// Only do stuff with BEM element if it has a BEM block parent
-		if ( $element['bem_element'] ) {
-
-			$bem_element = $element['bem_element'];
-
-			// If bem_element is set to true automatically set bem_block as bem_element
-			if ( $element['bem_element'] === true ) {
-				$bem_element = $element['bem_block'] ? $element['bem_block'] : $name;
-			}
-
-			// Add BEM element as class
-			$element['classes'][] = get_current_component_parent() . "__{$bem_element}";
-		}
-
-		$element['classes'] += $element['extra_classes'];
-		$element['classes'] = render_classes($element['classes']);
-
-		// log($name);
-		// log($element);
-		// log(get_component_parents());
-		// log('----------------------------');
-	}
-
-
-	// Setup content render
-	$content_render = '';
-
-	if ( is_string($content) ) {
-
-		$content_render .= $content;
-	}
-	elseif ( is_array($content) ) {
-
-
-		// Only add current component as parent if it's defined as a BEM-block
-		if ( $element['bem_block'] ) {
-			add_current_component_as_parent($name);
-		}
-
-		foreach ( $content as $inner_component ) {
-			$content_render .= render_component( $inner_component );
-		}
-
-		// Only remove current component as parent if it's defined as a BEM-block
-		if ( $element['bem_block'] ) {
-			remove_current_component_as_parent($name);
-		}
-	}
-
-	if ( ! $content_render && ! $element['force_display'] ) {
-		return '';
-	}
-	else {
-		return sprintf( render_element_format( $element, $name ), $content_render );
-	}
-}
-
-
-function setup_component_element( $element, $name ) {
-
-	// If element is specified process it
-	if ( is_array($element) ) {
-		$element_defaults = [
-			'tag'           => 'div',
-			'extra_classes' => [],
-			'attributes'    => [],
-			'inner_wrap'    => false,
-			'force_display' => false,
-			'bem_block'     => $name,
-			'bem_element'   => false,
-		];
-
-		// Merge/replace defaults with the component
-		$element = array_replace( $element_defaults, $element );
+		] );
 
 		// Sanitize
 		$element['tag']           = esc_html( $element['tag'] );
@@ -193,7 +57,76 @@ function setup_component_element( $element, $name ) {
 	return $element;
 }
 
-function render_element_format( $element ) {
+function setup_component_content( $content ) {
+
+	$_content = '';
+
+	// Function
+	if ( is_string($content) ) {
+		$_content = $content;
+	}
+	// Array of content
+	elseif ( is_array($content) ) {
+
+		$_content = [];
+		foreach ( $content as $subcomponent ) {
+			$_content[] = setup_component( $subcomponent );
+		}
+	}
+
+	return $_content;
+}
+
+/**
+ * Rendering
+ */
+function render_component( $component ) {
+
+	// Sanitize component data
+	$name = esc_html( $component['name'] );
+
+	// // Prevent a component to be a child itself (infinite loop)
+	// if ( is_component_child($name) ) {
+	// 	return '';
+	// }
+
+	// Setup element
+	$element = $component['element'];
+	$content = $component['content'];
+
+	// Setup render
+	$render = '';
+
+	if ( is_string($content) ) {
+
+		$render .= call_user_func( $content );
+	}
+	elseif ( is_array($content) ) {
+
+		// Only add current component as parent if it's defined as a BEM-block
+		if ( $element['bem_block'] ) {
+			add_current_component_as_parent($name);
+		}
+
+		foreach ( $content as $inner_component ) {
+			$render .= render_component( $inner_component );
+		}
+
+		// Only remove current component as parent if it's defined as a BEM-block
+		if ( $element['bem_block'] ) {
+			remove_current_component_as_parent($name);
+		}
+	}
+
+	// If we have a render or display is forced, wrap element around render
+	if ( $render || $element['force_display'] ) {		
+		$render = sprintf( render_element_format( $element, $name ), $render );
+	}
+
+	return $render;
+}
+
+function render_element_format( $element, $name ) {
 
 	// Setup render
 	$render_format = '%s';
@@ -205,8 +138,10 @@ function render_element_format( $element ) {
 
 		if ( $element['inner_wrap']	) {
 
+			$bem_block = get_bem_block( $element['bem_block'], $name );
+
 			// Decide the classname of 'inner' based on whether it's a BEM-block
-			$inner_class = ( $element['bem_block'] ) ? "{$element['bem_block']}__inner" : 'inner';
+			$inner_class = ( $bem_block ) ? "{$bem_block}__inner" : 'inner';
 
 			// Setup inner wrap render format
 			$render_format_inner_wrap = sprintf( '<div class="%s">%%s</div>', $inner_class );
@@ -217,8 +152,8 @@ function render_element_format( $element ) {
 		$render_format = sprintf( 
 			'<%1$s class="%2$s"%3$s>%4$s</%1$s>', 
 			$element['tag'], 
-			$element['classes'], 
-			$element['attributes'], 
+			render_element_classes($element, $name), 
+			render_attr($element['attributes']), 
 			$render_format_inner_wrap 
 		);
 	}
@@ -226,6 +161,81 @@ function render_element_format( $element ) {
 	return $render_format;
 }
 
+function render_element_classes( $element, $name ) {
+
+	$classes = [];
+
+	$bem_block = get_bem_block( $element['bem_block'], $name );
+	$bem_element = get_bem_element( $element['bem_element'], $bem_block, $name );
+
+	if ($bem_block) {
+		$classes[] = $bem_block;
+	}
+
+	if ($bem_element) {
+		$classes[] = $bem_element;
+	}
+
+	$classes += $element['extra_classes'];
+	$classes = render_classes($classes);
+
+	return $classes;
+}
+
+function get_bem_block( $bem_block, $name ) {
+
+	$_bem_block = false;
+
+	if ( is_string($bem_block) && $bem_block != '' ) {
+		$_bem_block = $bem_block;
+	}
+	elseif ( $bem_block === true ) {
+		$_bem_block = $name;
+	}
+
+	return $_bem_block;
+}
+
+function get_bem_element( $bem_element, $bem_block, $name ) {
+
+	$_bem_element = false;
+
+	// Only do stuff with BEM element if it has a BEM block parent
+	if ( $bem_element ) {
+
+		$bem_block_parent = get_current_component_parent();
+
+		if ($bem_block_parent) {
+
+			// If bem_element is set to true automatically set bem_block as bem_element
+			if ( $bem_element === true ) {
+				$bem_element = $bem_block ?? $name;
+			}
+
+			// Add BEM element as class
+			$_bem_element = "{$bem_block_parent}__{$bem_element}";
+		}
+	}
+
+	return $_bem_element;
+}
+
+
+function get_components() {
+	global $ejo_tmpl_components;
+
+	return $ejo_tmpl_components ?? [];
+}
+
+function set_components($components) {
+	global $ejo_tmpl_components;
+
+	$ejo_tmpl_components = $components ?? [];
+}
+
+/**
+ * Get component parents
+ */
 function get_component_parents() {
 	global $ejo_tmpl_component_parents;
 
@@ -248,16 +258,18 @@ function get_current_component_parent() {
 }
 
 function add_current_component_as_parent( $name ) {
-	global $ejo_tmpl_component_parents;
+	$parents = get_component_parents();
+	$parents[] = $name;
 
-	$ejo_tmpl_component_parents[] = $name;
+	$GLOBALS['ejo_tmpl_component_parents'] = $parents;
 	// ksort($ejo_tmpl_component_parents);
 }
 
 function remove_current_component_as_parent( $name ) {
-	global $ejo_tmpl_component_parents;
+	$parents = get_component_parents();	
+	$parents = remove_value_from_array( $parents, $name );
 
-	$ejo_tmpl_component_parents = remove_value_from_array( $ejo_tmpl_component_parents, $name );
+	$GLOBALS['ejo_tmpl_component_parents'] = $parents;
 	// ksort($ejo_tmpl_component_parents);
 }
 
@@ -310,41 +322,3 @@ function remove_value_from_array( array $array, $value ) {
 
 	return $array;
 }
-
-
-/*
-
-[
-	name: site
-	content: [
-		[
-			name: site-header,
-			content: [
-				[
-					name: site-branding,
-					content: function
-				],
-				[
-					name: site-nav,
-					content: function
-				]
-
-			]
-		],
-		[
-			name: site-main,
-			content: [
-				[
-					name: page,
-					content: [...]
-				]
-			]
-		],
-		[
-			name: site-footer,
-			content: false
-		]
-	]
-]
-
-*/
