@@ -20,57 +20,48 @@ function setup_components() {
  */
 function register_component( $name ) {
 
-	log('register_component');
-	log($name);
-
-	global $ejo_tmpl_components;
-
-	// Make sure it's always an array
-	if (! is_array($ejo_tmpl_components)) {
-		$ejo_tmpl_components = [];
-	}
-
 	// Sanitize component data
 	$name = esc_html( $name );
-
-	// Prevent a component to be a child itself (infinite loop)
-	if ( is_component_child($name) ) {
-		return '';
-	}
 
 	// Allow filters
 	$element = apply_filters( "ejo/tmpl/{$name}/element", false );
 	$content = apply_filters( "ejo/tmpl/{$name}/content", null );
 
-	// Register component
-	$ejo_tmpl_components[$name]['element'] = $element;
-	// $ejo_tmpl_components[$name]['content'] = $content;
+	return [
+		'name' => $name, 
+		'element' => $element, 
+		'content' => setup_component_content($content)
+	];
+}
+
+function setup_component_content( $content ) {
+
+	$_content = '';
 
 	// Function
 	if ( is_string($content) ) {
-		$ejo_tmpl_components[$name]['content'] = $content;
+		$_content = 'function';
 	}
-	// Array of components
+	// Array of content
 	elseif ( is_array($content) ) {
 
-
-		// // Only add current component as parent if it's defined as a BEM-block
-		// if ( $element['bem_block'] ) {
-		// 	add_current_component_as_parent($name);
-		// }
-
-		foreach ( $content as $inner_component ) {
-			$ejo_tmpl_components[$name]['content'][$inner_component] = register_component( $inner_component );
+		$_content = [];
+		foreach ( $content as $subcomponent ) {
+			$_content[] = register_component( $subcomponent );
 		}
-
-		// // Only remove current component as parent if it's defined as a BEM-block
-		// if ( $element['bem_block'] ) {
-		// 	remove_current_component_as_parent($name);
-		// }
 	}
 
-	return $content;
+	return $_content;
 }
+
+// function render_component() {
+// 	global $ejo_tmpl_components;
+
+// 	foreach ($ejo_tmpl_components as $component) {
+// 		# code...
+// 	}
+
+// }
 
 /**
  * Render component
@@ -171,6 +162,35 @@ function render_component( $name ) {
 	else {
 		return sprintf( render_element_format( $element, $name ), $content_render );
 	}
+}
+
+
+function setup_component_element( $element, $name ) {
+
+	// If element is specified process it
+	if ( is_array($element) ) {
+		$element_defaults = [
+			'tag'           => 'div',
+			'extra_classes' => [],
+			'attributes'    => [],
+			'inner_wrap'    => false,
+			'force_display' => false,
+			'bem_block'     => $name,
+			'bem_element'   => false,
+		];
+
+		// Merge/replace defaults with the component
+		$element = array_replace( $element_defaults, $element );
+
+		// Sanitize
+		$element['tag']           = esc_html( $element['tag'] );
+		$element['extra_classes'] = (array) $element['extra_classes'];
+		$element['attributes']    = (array) $element['attributes'];
+		$element['inner_wrap']    = !! $element['inner_wrap'];
+		$element['force_display'] = !! $element['force_display'];
+	}
+
+	return $element;
 }
 
 function render_element_format( $element ) {
@@ -290,3 +310,41 @@ function remove_value_from_array( array $array, $value ) {
 
 	return $array;
 }
+
+
+/*
+
+[
+	name: site
+	content: [
+		[
+			name: site-header,
+			content: [
+				[
+					name: site-branding,
+					content: function
+				],
+				[
+					name: site-nav,
+					content: function
+				]
+
+			]
+		],
+		[
+			name: site-main,
+			content: [
+				[
+					name: page,
+					content: [...]
+				]
+			]
+		],
+		[
+			name: site-footer,
+			content: false
+		]
+	]
+]
+
+*/

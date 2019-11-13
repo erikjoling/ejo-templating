@@ -12,6 +12,46 @@ add_action( 'wp', function() {
 	 * Everything without a template conditional is considered to part of a singular page template
 	 */
 
+	// register_component( 'site', [ 
+	// 	'element' => [
+	// 		'tag' => 'div', 
+	// 		'inner_wrap' => true, 
+	// 	],
+	// 	'content' => [
+	// 		'site-header', 
+	// 		// 'site-main', 
+	// 		// 'site-footer'
+	// 	] 
+	// ] );
+
+	// register_component( 'site-header', [ 
+	// 	'element' => [
+	// 		'tag' => 'div', 
+	// 		'inner_wrap' => true, 
+	// 	],
+	// 	'content' => [
+	// 		'site-branding', 
+	// 		// 'site-nav-toggle', 
+	// 		// 'site-nav'
+	// 	] 
+	// ] );
+
+	// register_component( 'site-header', function( $component ) {
+	// 	'element' => [
+	// 		'tag' => 'div', 
+	// 		'inner_wrap' => true, 
+	// 	],
+	// 	'content' => [
+	// 		'site-branding', 
+	// 		// 'site-nav-toggle', 
+	// 		// 'site-nav'
+	// 	] 
+	// ] );
+
+	// register_component( 'site-branding', [ 
+	// 	'content' => 'render_site_branding'
+	// ] );
+
 	/**
 	 * First setting up the ELEMENT of each component
 	 */
@@ -97,7 +137,7 @@ add_action( 'wp', function() {
 	# Big site components
 
 	add_filter( 'ejo/tmpl/site/content', function( $content ) {
-		return [ 'site-header', 'site-main', 'site-footer' ];
+		return [ 'site-header', 'site-main' ];
 	});
 
 	add_filter( 'ejo/tmpl/site-header/content', function( $content ) {
@@ -198,9 +238,9 @@ add_action( 'wp', function() {
  * Test
  */ 
 add_action( 'wp', function() {
-
-	register_component('site');
-
 	global $ejo_tmpl_components;
+
+	$ejo_tmpl_components = register_component('site');
+
 	log($ejo_tmpl_components);
 });
