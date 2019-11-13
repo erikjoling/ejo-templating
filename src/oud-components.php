@@ -134,25 +134,27 @@ add_action( 'wp', function() {
 		return [ 'author' ];
 	});
 
+
+
 	/**
 	 * Map Components to functions 
 	 */
-	add_filter( 'ejo/tmpl/site-branding/content', function($content) { return __NAMESPACE__ . '\render_site_branding'; } );
-	// add_filter( 'ejo/tmpl/site-nav-toggle/content', __NAMESPACE__ . '\render_site_nav_toggle' );
-	// add_filter( 'ejo/tmpl/site-nav/content', __NAMESPACE__ . '\render_site_nav' );
-	// add_filter( 'ejo/tmpl/page-title/content', __NAMESPACE__ . '\get_page_title' );
-	// add_filter( 'ejo/tmpl/page-content/content', __NAMESPACE__ . '\render_page_content' );
-	// add_filter( 'ejo/tmpl/breadcrumbs/content', __NAMESPACE__ . '\render_breadcrumbs' );
-	// add_filter( 'ejo/tmpl/the-post/content', '\the_post' );
-	// add_filter( 'ejo/tmpl/the-post-loop/content', __NAMESPACE__ . '\render_post_archive_loop' );
-	// add_filter( 'ejo/tmpl/plural-post-header/content', __NAMESPACE__ . '\render_plural_post_title' );
-	// add_filter( 'ejo/tmpl/plural-post-content/content', __NAMESPACE__ . '\render_plural_post_content' );
-	// // add_filter( 'ejo/tmpl/plural-post-footer/content', __NAMESPACE__ . '\render_post_meta' );
+	add_filter( 'ejo/tmpl/site-branding/content', __NAMESPACE__ . '\render_site_branding' );
+	add_filter( 'ejo/tmpl/site-nav-toggle/content', __NAMESPACE__ . '\render_site_nav_toggle' );
+	add_filter( 'ejo/tmpl/site-nav/content', __NAMESPACE__ . '\render_site_nav' );
+	add_filter( 'ejo/tmpl/page-title/content', __NAMESPACE__ . '\get_page_title' );
+	add_filter( 'ejo/tmpl/page-content/content', __NAMESPACE__ . '\render_page_content' );
+	add_filter( 'ejo/tmpl/breadcrumbs/content', __NAMESPACE__ . '\render_breadcrumbs' );
+	add_filter( 'ejo/tmpl/the-post/content', '\the_post' );
+	add_filter( 'ejo/tmpl/the-post-loop/content', __NAMESPACE__ . '\render_post_archive_loop' );
+	add_filter( 'ejo/tmpl/plural-post-header/content', __NAMESPACE__ . '\render_plural_post_title' );
+	add_filter( 'ejo/tmpl/plural-post-content/content', __NAMESPACE__ . '\render_plural_post_content' );
+	// add_filter( 'ejo/tmpl/plural-post-footer/content', __NAMESPACE__ . '\render_post_meta' );
 
-	// // Post Meta
-	// add_filter( 'ejo/tmpl/author/content', __NAMESPACE__ . '\render_author' );
-	// add_filter( 'ejo/tmpl/date/content', __NAMESPACE__ . '\render_date' );
-	// add_filter( 'ejo/tmpl/categories/content', __NAMESPACE__ . '\render_categories' );
+	// Post Meta
+	add_filter( 'ejo/tmpl/author/content', __NAMESPACE__ . '\render_author' );
+	add_filter( 'ejo/tmpl/date/content', __NAMESPACE__ . '\render_date' );
+	add_filter( 'ejo/tmpl/categories/content', __NAMESPACE__ . '\render_categories' );
 
 	/**
 	 * Archive setup (plural page)
@@ -198,9 +200,51 @@ add_action( 'wp', function() {
  * Test
  */ 
 add_action( 'wp', function() {
+	// add_filter( 'ejo/tmpl/site/element', function( $element ) {
+	// 	$element['extra_classes'][] = 'has-background-black';
 
-	register_component('site');
+	// 	return $element;
+	// });
 
-	global $ejo_tmpl_components;
-	log($ejo_tmpl_components);
+	add_filter( 'ejo/tmpl/page/content', function( $content ) {
+		// component_append( $content, 'page-header' );
+		// component_append( $content, 'page-main' );
+		// component_append( $content, 'page-footer' );
+
+		return $content;
+	});
+
+	add_filter( 'ejo/tmpl/page-footer/content', function( $content ) {
+		// component_prepend( $content, 'page-title' );
+		// component_prepend( $content, 'page-title' );
+		// component_prepend( $content, 'page-title' );
+		// component_append( $content, 'page-content' );
+		// component_append( $content, 'page-footer' );
+
+		return $content;
+	});
+
+	add_filter( 'ejo/tmpl/page-title/element', function( $element ) {
+
+		if (is_component_child('page-footer')) {
+			$element['tag'] = 'h3';
+		}
+
+		return $element;
+	});
+
+	// add_filter( 'ejo/tmpl/page-footer/content', function( $content ) {
+	// 	component_append( $content, 'breadcrumbs' );
+
+	// 	return $content;
+	// });
+
+
+	// add_filter( 'ejo/tmpl/page-header/content', function( $content ) {
+	// 	component_remove( $content, 'breadcrumbs' );
+
+	// 	return $content;
+	// });
+
+	// add_filter( 'ejo/tmpl/breadcrumbs/content', '__return_false' );
 });

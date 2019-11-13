@@ -14,65 +14,6 @@ function setup_components() {
 }
 
 /**
- * Register component
- *
- * Note: A component should be registered first
- */
-function register_component( $name ) {
-
-	log('register_component');
-	log($name);
-
-	global $ejo_tmpl_components;
-
-	// Make sure it's always an array
-	if (! is_array($ejo_tmpl_components)) {
-		$ejo_tmpl_components = [];
-	}
-
-	// Sanitize component data
-	$name = esc_html( $name );
-
-	// Prevent a component to be a child itself (infinite loop)
-	if ( is_component_child($name) ) {
-		return '';
-	}
-
-	// Allow filters
-	$element = apply_filters( "ejo/tmpl/{$name}/element", false );
-	$content = apply_filters( "ejo/tmpl/{$name}/content", null );
-
-	// Register component
-	$ejo_tmpl_components[$name]['element'] = $element;
-	// $ejo_tmpl_components[$name]['content'] = $content;
-
-	// Function
-	if ( is_string($content) ) {
-		$ejo_tmpl_components[$name]['content'] = $content;
-	}
-	// Array of components
-	elseif ( is_array($content) ) {
-
-
-		// // Only add current component as parent if it's defined as a BEM-block
-		// if ( $element['bem_block'] ) {
-		// 	add_current_component_as_parent($name);
-		// }
-
-		foreach ( $content as $inner_component ) {
-			$ejo_tmpl_components[$name]['content'][$inner_component] = register_component( $inner_component );
-		}
-
-		// // Only remove current component as parent if it's defined as a BEM-block
-		// if ( $element['bem_block'] ) {
-		// 	remove_current_component_as_parent($name);
-		// }
-	}
-
-	return $content;
-}
-
-/**
  * Render component
  *
  * Note: A component should be registered first
@@ -86,6 +27,10 @@ function render_component( $name ) {
 	if ( is_component_child($name) ) {
 		return '';
 	}
+
+	// Allow filters
+	$element = apply_filters( "ejo/tmpl/{$name}/element", false );
+	$content = apply_filters( "ejo/tmpl/{$name}/content", null );
 
 	// If element is specified process it
 	if ( is_array($element) ) {
