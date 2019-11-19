@@ -3,7 +3,7 @@
  * Composition Class
  */
 
-namespace Ejo;
+namespace Ejo\Tmpl;
 
 if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
 
@@ -71,25 +71,35 @@ final class Composition {
 		// Sanitize the name
 		$name = esc_html( $name );
 
-		// Setup component
+		// Let other scripts setup or manipulate the component
+		//
+		// Note: sometimes the filter only runs a function without returning a value
+		//		 For example: the-post --> the_post();
 		$component = apply_filters( "ejo/composition/component/{$name}", [], $name );
 
 		// Process component parts
 		$element = $component['element'] ?? false;
 		$content = $component['content'] ?? false;
 
-		// Setup element
-		$element = static::setup_component_element($element, $name);
-
-		// Component should be a parent if it is a BEM block
-		$is_parent = !! $element['bem_block'];
-
 		// Setup render
-		$render = static::render_component_content( $content, $is_parent, $name );
+		$render = '';
+		
+		// Only do stuff if $element and $content are not false
+		if ( $element || $content ) {
 
-		// If we have a render or display is forced, wrap element around render
-		if ( $element && ( $render || $element['force_display'] ) ) {		
-			$render = static::render_component_wrapped( $element, $render );
+			// Setup element
+			$element = static::setup_component_element($element, $name);
+
+			// Component should be a parent if it is a BEM block
+			$is_parent = !! $element['bem_block'];
+
+			// Setup render
+			$render = static::render_component_content( $content, $is_parent, $name );
+
+			// If we have a render or display is forced, wrap element around render
+			if ( $element && ( $render || $element['force_display'] ) ) {		
+				$render = static::render_component_wrapped( $element, $render );
+			}
 		}
 
 		return $render;
@@ -105,7 +115,7 @@ final class Composition {
 				'name'          => $name,
 				'tag'           => 'div',
 				'extra_classes' => [],
-				'attributes'    => [],
+				'attr'    		=> [],
 				'inner_wrap'    => false,
 				'force_display' => false,
 				'bem_block'     => true,
@@ -116,7 +126,7 @@ final class Composition {
 			$element['name']          = esc_html( $element['name'] );
 			$element['tag']           = esc_html( $element['tag'] );
 			$element['extra_classes'] = (array) $element['extra_classes'];
-			$element['attributes']    = (array) $element['attributes'];
+			$element['attr']    	  = (array) $element['attr'];
 			$element['inner_wrap']    = !! $element['inner_wrap'];
 			$element['force_display'] = !! $element['force_display'];
 		}
@@ -179,7 +189,7 @@ final class Composition {
 				'<%1$s class="%2$s"%3$s>%4$s</%1$s>', 
 				$element['tag'], 
 				static::render_element_classes($element), 
-				static::render_attr($element['attributes']), 
+				render_attr($element['attr']), 
 				$render_format_inner_wrap 
 			);
 		}
@@ -203,7 +213,7 @@ final class Composition {
 		}
 
 		$classes += $element['extra_classes'];
-		$classes = static::render_classes($classes);
+		$classes = render_classes($classes);
 
 		return $classes;
 	}
@@ -282,62 +292,62 @@ final class Composition {
 	private static function remove_parent( $name ) {
 		$parents = static::get_parents();
 
-		if (($key = array_search($name, $parents)) !== false) {
-		    unset($parents[$key]);
+		// Remove parent
+		$parents = remove_value_from_array($parents, $name);
 
-		    // Set parents
-			static::set_parents($parents);		
+		// Set parents
+		static::set_parents($parents);
+	}
+
+
+	public static function component_prepend( &$components, $value, $prepend_before = null ) {
+		$components = ( is_array($components) ) ? $components : [];
+
+		if ($prepend_before) {
+			$components = array_insert_before($components, $prepend_before, $value);
+		}
+		else {
+			array_unshift($components, $value);
 		}
 	}
 
-	/** 
-	 * Render classes
-	 *
-	 * Example ['class-1', 'class-2'] becomes "class-1 class-2"
-	 *
-	 * @param array
-	 * @return string
-	 */
-	public static function render_classes( $classes ) {
-		$html = '';
+	public static function component_append( &$components, $value, $prepend_after = null ) {
+		$components = ( is_array($components) ) ? $components : [];
 
-		foreach ( $classes as $class ) {
-
-			$esc_class = esc_html( $class );
-
-			$html .= " $esc_class";
+		if ($prepend_after) {
+			$components = array_insert_after($components, $prepend_after, $value);
 		}
-
-		return trim( $html );
+		else {
+			array_push($components, $value);
+		}
 	}
 
-	/** 
-	 * Render attributes
-	 *
-	 * Example ['lang' => 'nl'] becomes lang="nl"
-	 *
-	 * @param 	array
-	 * @return 	string
-	 */
-	public static function render_attr( $attr ) {
-		$html = '';
+	public static function component_remove( &$components, $lookup_value ) {
+		$components = remove_value_from_array($components, $lookup_value);
+	}
 
-		foreach ( $attr as $name => $value ) {
+	public static function setup_component( $name, $component ) {
 
-			$esc_value = '';
+		// Passing an array as closure prevents directly calling a function when
+		// setting up the component. When using a anonymous function it only
+		// gets called when the filter is due
 
-			// If the value is a link `href`, use `esc_url()`.
-			if ( $value !== false && 'href' === $name ) {
-				$esc_value = esc_url( $value );
+		// // If array then pass the component as a Closure
+		// if ( is_array($component) ) {
 
-			} elseif ( $value !== false ) {
-				$esc_value = esc_attr( $value );
-			}
+		// 	add_filter( "ejo/composition/component/{$name}", function() use ($component) {
+		// 		return $component;
+		// 	});
+		// }
 
-			$html .= false !== $value ? sprintf( ' %s="%s"', esc_html( $name ), $esc_value ) : esc_html( " {$name}" );
-		}
+		// // Else, we assume the component is a function
+		// else {
+			add_filter( "ejo/composition/component/{$name}", $component, 10, 2 );
+		// }
 
-		return trim( $html );
 	}
 }
+
+
+
 

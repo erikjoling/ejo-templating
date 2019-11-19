@@ -6,14 +6,11 @@
 namespace Ejo\Tmpl;
 
 require_once __DIR__ . '/functions-debugging.php';
-require_once __DIR__ . '/composition.php';
-require_once __DIR__ . '/composition-setup.php';
-// require_once __DIR__ . '/functions-templating-system.php';
+require_once __DIR__ . '/functions-helpers.php';
+require_once __DIR__ . '/functions-filters.php';
 require_once __DIR__ . '/functions-templating-conditionals.php';
-// require_once __DIR__ . '/functions-templating-attributes.php';
-// require_once __DIR__ . '/functions-templating-classes.php';
 require_once __DIR__ . '/functions-templating-helpers.php';
 require_once __DIR__ . '/functions-templating.php';
-require_once __DIR__ . '/functions-templating-setup.php';
 
-require_once __DIR__ . '/functions-filters.php';
+require_once __DIR__ . '/composition.php';
+require_once __DIR__ . '/components-setup.php';

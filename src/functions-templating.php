@@ -5,30 +5,49 @@
 
 namespace Ejo\Tmpl;
 
+
+/** 
+ * Render HTML attributes
+ */
+function render_html_attr() {
+	return render_attr( get_html_attr() );
+}
+
+
+/** 
+ * Render Body classes
+ */
+function render_body_classes() {
+	return render_classes( \get_body_class() );
+}
+
+/** 
+ * Render Site
+ */
 function render_site() {
 
-	ob_start();
+	\ob_start();
 
 	?>
 	<!doctype html>
-	<html <?= display_html_attr(); ?>>
+	<html <?= render_html_attr(); ?>>
 
 	<head>
-		<?php wp_head(); ?>
+		<?php \wp_head(); ?>
 	</head>
 
-	<body class="<?php display_body_classes(); ?>">
+	<body class="<?= render_body_classes(); ?>">
 
-		<?php \Ejo\Composition::display(); ?>
+		<?php Composition::display(); ?>
 
-		<?php wp_footer(); ?>
+		<?php \wp_footer(); ?>
 		
 	</body>
 
 	</html>
 	<?php
 
-	return ob_get_clean();
+	return \ob_get_clean();
 }
 
 function render_site_branding() {
@@ -85,14 +104,16 @@ function render_page_content() {
 }
 
 function render_post_archive_loop() {
-	$render = '';
-
 	ob_start();
+
+	log('dit zou laat moeten zijn');
 	
 	while ( have_posts() ) {
 		the_post();
 
-		// echo render_component('plural-post');
+		log(get_the_title());
+
+		echo Composition::render_component('plural-post');
 	}
 	
 	return ob_get_clean();
@@ -100,10 +121,12 @@ function render_post_archive_loop() {
 
 function render_plural_post_title() {
 
+	log('en ook dit laat');
+
 	ob_start();
 
 	?>
-	<h3><a href="<?php the_permalink() ?>" class=""><?php the_title(); ?></a></h3>
+	<a href="<?php the_permalink() ?>" class=""><?php the_title(); ?></a>
 	<?php
 
 	return ob_get_clean();
