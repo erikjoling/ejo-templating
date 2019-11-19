@@ -19,15 +19,7 @@ function render_site() {
 
 	<body class="<?php display_body_classes(); ?>">
 
-		<?php 
-
-		$components = \Ejo\Tmpl\get_components();
-
-		foreach ($components as $component) {
-			echo \Ejo\Tmpl\render_component($component);
-		}
-
-		?>
+		<?php \Ejo\Composition::display(); ?>
 
 		<?php wp_footer(); ?>
 		
@@ -100,7 +92,7 @@ function render_post_archive_loop() {
 	while ( have_posts() ) {
 		the_post();
 
-		echo render_component('plural-post');
+		// echo render_component('plural-post');
 	}
 	
 	return ob_get_clean();

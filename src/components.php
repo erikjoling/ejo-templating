@@ -12,17 +12,26 @@ add_action( 'wp', function() {
 	 * Everything without a template conditional is considered to part of a singular page template
 	 */
 
-	// register_component( 'site', [ 
-	// 	'element' => [
-	// 		'tag' => 'div', 
-	// 		'inner_wrap' => true, 
-	// 	],
-	// 	'content' => [
-	// 		'site-header', 
-	// 		// 'site-main', 
-	// 		// 'site-footer'
-	// 	] 
-	// ] );
+	render_component( 'site', function($data) {
+
+	}, []);
+		[ 
+		'element' => [
+			'tag' => 'div', 
+			'inner_wrap' => true, 
+		],
+		'content' => [
+			'site-header', 
+			// 'site-main', 
+			// 'site-footer'
+		] 
+	] );
+
+	/*
+	Ik interesseer me niet in het eerst registreren en daarna renderen. 
+	Het is prima om tijdens het renderen alles op te bouwen. 
+	Zolang het maar BEM proof is. En flexibel qua aanpasbaarheid.
+	*/
 
 	// register_component( 'site-header', [ 
 	// 	'element' => [
@@ -146,12 +155,18 @@ add_action( 'wp', function() {
 		];
 	});
 
-
 	add_filter( 'ejo/tmpl/component/the-post', function( $components ) {
 		return [ 
 			'content' => '\the_post'
 		];
 	});
+
+	add_filter( 'ejo/tmpl/component/the-post-loop', function( $components ) {
+		return [ 
+			'content' => __NAMESPACE__ . '\render_post_archive_loop'
+		];
+	});
+
 	// add_filter( 'ejo/tmpl/the-post-loop/content', __NAMESPACE__ . '\render_post_archive_loop' );
 	// add_filter( 'ejo/tmpl/plural-post-header/content', __NAMESPACE__ . '\render_plural_post_title' );
 	// add_filter( 'ejo/tmpl/plural-post-content/content', __NAMESPACE__ . '\render_plural_post_content' );
@@ -247,18 +262,18 @@ add_action( 'wp', function() {
 
 	if (is_plural_page()) {
 
-		add_filter( 'ejo/tmpl/page/content', function( $content ) {
+		add_filter( 'ejo/tmpl/component/page', function( $component ) {
 
-			component_remove( $content, 'the-post' );
+			component_remove( $component['content'], 'the-post' );
 
-			return $content;
+			return $component;
 		});
 
-		add_filter( 'ejo/tmpl/page-main/content', function( $content ) {
+		add_filter( 'ejo/tmpl/component/page-main', function( $component ) {
 
-			component_append( $content, 'the-post-loop' );
+			component_append( $component['content'], 'the-post-loop' );
 
-			return $content;
+			return $component;
 		});
 
 		add_filter( 'ejo/tmpl/page-header/content', function( $content ) {
@@ -292,5 +307,5 @@ add_action( 'wp', function() {
 
 	set_components($components);
 
-	log($components);
+	// log($components);
 });
