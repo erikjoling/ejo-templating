@@ -15,11 +15,11 @@ if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
 final class Composition {
 
 	/**
-     * Component parents
+     * Component ancestors
      *
      * @var array
      */
-    private static $parents = [];
+    private static $ancestors = [];
 
     /**
      * Constructor method.
@@ -71,6 +71,10 @@ final class Composition {
 		// Sanitize the name
 		$name = esc_html( $name );
 
+		log( 'component: ' . $name );
+		log( 'parent: ' . static::get_parent() );
+		log( '' );
+
 		// Let other scripts setup or manipulate the component
 		//
 		// Note: sometimes the filter only runs a function without returning a value
@@ -91,10 +95,20 @@ final class Composition {
 			$element = static::setup_component_element($element, $name);
 
 			// Component should be a parent if it is a BEM block
-			$is_parent = !! $element['bem_block'];
+			$parent = static::get_bem_block( $element['bem_block'], $element['name'] );
+
+			// Only add current component as parent if it's defined as a BEM-block
+			if ( $parent ) {
+				static::add_parent($parent);
+			}
 
 			// Setup render
-			$render = static::render_component_content( $content, $is_parent, $name );
+			$render = static::render_component_content( $content );
+
+			// Only remove current component as parent if it's defined as a BEM-block
+			if ( $parent ) {
+				static::remove_parent($parent);
+			}
 
 			// If we have a render or display is forced, wrap element around render
 			if ( $element && ( $render || $element['force_display'] ) ) {		
@@ -134,7 +148,8 @@ final class Composition {
 		return $element;
 	}
 
-	private static function render_component_content( $content, $is_parent, $name ) {
+	private static function render_component_content( $content ) {
+
 		// Setup render
 		$render = '';
 
@@ -144,18 +159,8 @@ final class Composition {
 		}
 		elseif ( is_array($content) ) {
 
-			// Only add current component as parent if it's defined as a BEM-block
-			if ( $is_parent ) {
-				static::add_parent($name);
-			}
-
 			foreach ( $content as $inner_component ) {
 				$render .= static::render_component( $inner_component );
-			}
-
-			// Only remove current component as parent if it's defined as a BEM-block
-			if ( $is_parent ) {
-				static::remove_parent($name);
 			}
 		}
 
@@ -240,7 +245,7 @@ final class Composition {
 		// Only do stuff with BEM element if it has a BEM block parent
 		if ( $bem_element ) {
 
-			$bem_block_parent = static::get_current_parent();
+			$bem_block_parent = static::get_parent();
 
 			if ($bem_block_parent) {
 
@@ -257,46 +262,46 @@ final class Composition {
 		return $_bem_element;
 	}
 
-	private static function get_parents() {
-		return static::$parents ?? [];
+	private static function get_ancestors() {
+		return static::$ancestors ?? [];
 	}
 
-	private static function set_parents( $parents ) {
-		if ( is_array($parents) ) {
-			static::$parents = $parents;
+	private static function set_ancestors( $ancestors ) {
+		if ( is_array($ancestors) ) {
+			static::$ancestors = $ancestors;
 		}
 	}
 
-	private static function is_parent( $name ) {
-		$parents = static::get_parents();
+	public static function has_ancestor( $name ) {
+		$ancestors = static::get_ancestors();
 
-		return ( ($key = array_search($name, $parents)) !== false );
+		return ( ($key = array_search($name, $ancestors)) !== false );
 	}
 
-	private static function get_current_parent() {
-		$parents = static::get_parents();
+	public static function get_parent() {
+		$ancestors = static::get_ancestors();
 
-		return end($parents); reset($parents);
+		return end($ancestors); reset($ancestors);
 	}
 
 	private static function add_parent( $name ) {
-		$parents = static::get_parents();
+		$ancestors = static::get_ancestors();
 
 		// Add parent
-		$parents[] = $name;
+		$ancestors[] = $name;
 
-		// Set parents
-		static::set_parents($parents);
+		// Set ancestors
+		static::set_ancestors($ancestors);
 	}
 
 	private static function remove_parent( $name ) {
-		$parents = static::get_parents();
+		$ancestors = static::get_ancestors();
 
 		// Remove parent
-		$parents = remove_value_from_array($parents, $name);
+		$ancestors = remove_value_from_array($ancestors, $name);
 
-		// Set parents
-		static::set_parents($parents);
+		// Set ancestors
+		static::set_ancestors($ancestors);
 	}
 
 

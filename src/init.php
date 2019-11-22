@@ -13,4 +13,5 @@ require_once __DIR__ . '/functions-templating-helpers.php';
 require_once __DIR__ . '/functions-templating.php';
 
 require_once __DIR__ . '/composition.php';
+// require_once __DIR__ . '/components.php';
 require_once __DIR__ . '/components-setup.php';

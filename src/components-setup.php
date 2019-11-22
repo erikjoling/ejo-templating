@@ -20,10 +20,55 @@ add_action( 'wp', function() {
 	*/
 
 	/*
-	Small problem with BEM: it looks like the BEM element inherits the wrong
-	BEM block. See plural-post-title-link
+	Als ik removable filter functions gebruik, dan kan ik niet zo flexibel
+	met template conditionals omgaan. Want die moet ik dan in de functions
+	aanroepen, in plaats van dat ik alles tegelijkertijd tackle binnen die
+	template. En dat is wel wat ik wil! Dus geen removable functions meer??
+
+	Of ik moet de naam van het template meenemen in de functienaam. Dan kan 
+	ik wel in één keer alle functies wrappen in een template conditional. 
+	...
+	Maar dit blijkt te omslachtig. Ik wil niet voor elke template contitional
+	(plural, single post, search, 404, archive) aparte functies aanmaken.
+
+	Waarom wil ik removable filters? Als er een plugin inhaakt op een component
+	via een filter dan kan ik deze in het thema eventueel weghalen. 
+
+	Het spanningsveld ligt dus tussen weghalen van component aanpassingen door
+	een plugin en het kunnen samenvoegen van component-setups binnen een 
+	template conditional. 
+
+	---
+
+	!! Geen removable functions meer. Ik kan met andere checks (filters/theme-support)
+	eventueel bepaalde components uit laten zetten. Specifiek bepaalde component-
+	setups uitschakelen is er niet meer bij.
 	*/
-	
+
+	/*
+	Ik kies voor het gebruik van een eigen API die het werk doet. Op deze manier
+	heb ik meer controle over wat er achter de schermen van de API gebeurt. Zo
+	lang de interface hetzelfde blijft hoef ik niet bang te zijn voor breakig 
+	backwardscompatibility.
+	*/
+
+	/*
+	On templates: Templates vs components vs composition.
+
+	With template I stick with the WordPress definition. Singular, Archive, Search,
+	404. Every template might have a different composition, which is a structure of 
+	components. 
+
+	The component called `page` is not tied to the wordpress post type `page`. 
+	It is a layout component inside the `site` component. It is normally present
+	on every template type. 
+
+	*/
+
+	/**
+	 * Site and Page stuff
+	 */
+
 	Composition::setup_component( 'site', function( $component ) { 
 		return [
 			'element' => [ 'tag' => 'div', 'inner_wrap' => true ],
@@ -80,11 +125,12 @@ add_action( 'wp', function() {
 		]; 
 	});
 
-	# Small components
-
 	Composition::setup_component( 'page-title', function( $component ) { 
+
+		$tag = (Composition::get_parent() == 'page-header') ? 'h1' : 'h2';
+
 		return [ 
-			'element' => [ 'tag' => 'h1', 'bem_element' => 'title' ],
+			'element' => [ 'tag' => $tag, 'bem_element' => 'title' ],
 			'content' => get_page_title()
 		]; 
 	});
@@ -119,6 +165,12 @@ add_action( 'wp', function() {
 		]; 
 	});
 
+	Composition::setup_component( 'the-post', '\\the_post' );
+
+	/**
+	 * Post stuff
+	 */
+
 	Composition::setup_component( 'the-post-loop', function( $component ) { 
 		return [
 			'content' => render_post_archive_loop() 
@@ -141,16 +193,8 @@ add_action( 'wp', function() {
 
 	Composition::setup_component( 'plural-post-title', function( $component ) { 
 		return [
-			'element' => [ 'tag' => 'h3', 'bem_block' => 'title', 'bem_element' => true ],
-			'content' => [ 'plural-post-title-link' ]
-		// 'content' => render_plural_post_title() 
-		]; 
-	});
-
-	Composition::setup_component( 'plural-post-title-link', function( $component ) { 
-		return [
-			'element' => [ 'tag' => 'a', 'bem_block' => false, 'bem_element' => 'link', 'attr' => [ 'href' => get_the_permalink() ] ],
-			'content' => get_the_title()
+			'element' => [ 'tag' => 'h3', 'bem_block' => false, 'bem_element' => 'title' ],
+			'content' => '<a href="'. get_the_permalink() .'">'. get_the_title() .'</a>'
 		]; 
 	});
 
@@ -164,19 +208,47 @@ add_action( 'wp', function() {
 	Composition::setup_component( 'plural-post-footer', function( $component ) { 
 		return [
 			'element' => [ 'tag' => 'footer', 'bem_block' => false, 'bem_element' => 'footer' ],
-		// 'content' => render_post_meta() 
+			'content' => [ 'post-meta' ]
+		]; 
+	});
+
+	Composition::setup_component( 'post-meta', function( $component ) { 
+		return [
+			'element' => [ 'tag' => 'div' ],
+			'content' => [ 'post-author', 'post-date', 'post-categories' ]
+		]; 
+	});
+
+	Composition::setup_component( 'post-author', function( $component ) { 
+		$bem_element = (Composition::get_parent() == 'post-meta') ? 'author' : true;
+
+		return [
+			'element' => [ 'tag' => 'div', 'bem_block' => false, 'bem_element' => $bem_element ],
+			'content' => render_post_author()
+		]; 
+	});
+
+	Composition::setup_component( 'post-date', function( $component ) { 
+		$bem_element = (Composition::get_parent() == 'post-meta') ? 'date' : true;
+
+		return [
+			'element' => [ 'tag' => 'div', 'bem_block' => false, 'bem_element' => $bem_element ],
+			'content' => render_post_date()
+		]; 
+	});
+
+	Composition::setup_component( 'post-categories', function( $component ) { 
+		$bem_element = (Composition::get_parent() == 'post-meta') ? 'categories' : true;
+
+		return [
+			'element' => [ 'tag' => 'div', 'bem_block' => false, 'bem_element' => $bem_element ],
+			'content' => render_post_categories()
 		]; 
 	});
 
 
 	/**
-	 * Specials
-	 */
-	Composition::setup_component( 'the-post', '\\the_post' );
-
-
-	/**
-	 * Template
+	 * Template: plural pages
 	 */
 	if (is_plural_page()) {
 
@@ -194,15 +266,11 @@ add_action( 'wp', function() {
 
 			return $component;
 		});
-
-		// Composition::setup_component( 'page-header', function( $component ) {
-
-		// 	Composition::component_append( $component['content'], 'page-content' );
-
-		// 	return $component;
-		// });
 	}
 
+	/**
+	 * Template: Single post
+	 */
 	if ( is_singular_page('post') ) {
 
 		Composition::setup_component( 'page-header', function( $component ) {
@@ -220,6 +288,12 @@ add_action( 'wp', function() {
  */ 
 add_action( 'wp', function() {
 
-	log('hopelijk is dit als eerst...');
+	Composition::setup_component( 'page-main', function( $component ) {
+
+		Composition::component_prepend( $component['content'], 'page-title' );
+
+		return $component;
+	});	
+
 }, 99);
 

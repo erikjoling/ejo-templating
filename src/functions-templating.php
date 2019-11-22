@@ -106,12 +106,8 @@ function render_page_content() {
 function render_post_archive_loop() {
 	ob_start();
 
-	log('dit zou laat moeten zijn');
-	
 	while ( have_posts() ) {
 		the_post();
-
-		log(get_the_title());
 
 		echo Composition::render_component('plural-post');
 	}
@@ -120,8 +116,6 @@ function render_post_archive_loop() {
 }
 
 function render_plural_post_title() {
-
-	log('en ook dit laat');
 
 	ob_start();
 
@@ -142,12 +136,38 @@ function render_plural_post_content() {
 	return ob_get_clean();
 }
 
-function render_author() {
-
+function render_post_author() {
+	$svg = '';
 	ob_start();
 	?>
 
-	Erik Joling
+	<?= $svg ?>
+	<span><?= get_the_author() ?></span>
+	
+	<?php
+	return ob_get_clean();
+}
+
+function render_post_date() {
+	$svg = '';
+	ob_start();
+	?>
+
+	<?= $svg ?>
+	<span><?= get_the_date() ?></span>
+	
+	<?php
+	return ob_get_clean();
+}
+
+function render_post_categories() {
+	$svg = '';
+	$separator = ', ';
+	ob_start();
+	?>
+
+	<?= $svg ?>
+	<span><?= get_the_term_list( get_the_ID(), 'category', '', $separator, '' ) ?></span>
 	
 	<?php
 	return ob_get_clean();

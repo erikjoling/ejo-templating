@@ -5,4 +5,6 @@
 use function Ejo\Tmpl\get_page_title;
 
 ?>
-<h1 class="page-title"><?= get_page_title(); ?></h1>
+<<?= $tag ?> <?= $classes ?><?= $attr ?>><?= get_page_title(); ?></<?= $tag ?>>
+
+<<?= $tag ?> <?= $classes ?><?= $attr ?>><?= render_components(...); ?></<?= $tag ?>>
