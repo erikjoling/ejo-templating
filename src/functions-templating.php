@@ -103,14 +103,29 @@ function render_page_content() {
 	return get_page_content();
 }
 
-function render_post_archive_loop() {
+function render_post_loop( $args = null ) {
 	ob_start();
 
-	while ( have_posts() ) {
-		the_post();
+	if ( $args ) {
+		$custom_query = new \WP_Query( $args ); 
+			
+		while ( $custom_query->have_posts() ) { 
+			$custom_query->the_post(); 
 
-		echo Composition::render_component('plural-post');
+			echo Composition::render_component('plural-post');
+
+			wp_reset_postdata(); 
+		}
+
 	}
+	else {
+		while ( have_posts() ) { 
+			the_post();
+
+			echo Composition::render_component('plural-post');
+		}
+	}
+
 	
 	return ob_get_clean();
 }

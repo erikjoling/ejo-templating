@@ -171,7 +171,7 @@ add_action( 'wp', function() {
 
 	Composition::setup_component( 'the-post-loop', function( $component ) { 
 		return [
-			'content' => render_post_archive_loop() 
+			'content' => render_post_loop() 
 		]; 
 	});
 
