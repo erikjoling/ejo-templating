@@ -1,1 +1,0 @@
-<a class="skip-link screen-reader-text" href="#main" tabindex="-1"><?php esc_html_e( 'Skip to content' ) ?></a>

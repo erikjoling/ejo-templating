@@ -71,16 +71,12 @@ final class Composition {
 		// Sanitize the name
 		$name = esc_html( $name );
 
-		log( 'component: ' . $name );
-		log( 'parent: ' . static::get_parent() );
-		log( '' );
-
 		// Let other scripts setup or manipulate the component
 		//
 		// Note: sometimes the filter only runs a function without returning a value
 		//		 For example: the-post --> the_post();
 		$component = apply_filters( "ejo/composition/component/{$name}", [], $name );
-
+		
 		// Process component parts
 		$element = $component['element'] ?? false;
 		$content = $component['content'] ?? false;

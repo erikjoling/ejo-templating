@@ -127,10 +127,8 @@ add_action( 'wp', function() {
 
 	Composition::setup_component( 'page-title', function( $component ) { 
 
-		$tag = (Composition::get_parent() == 'page-header') ? 'h1' : 'h2';
-
 		return [ 
-			'element' => [ 'tag' => $tag, 'bem_element' => 'title' ],
+			'element' => [ 'tag' => 'h1', 'bem_element' => 'title' ],
 			'content' => get_page_title()
 		]; 
 	});
@@ -246,6 +244,25 @@ add_action( 'wp', function() {
 		]; 
 	});
 
+	Composition::setup_component( 'post-nav', function( $component ) { 
+		return [
+			'element' => [ 'tag' => 'nav', 'inner_wrap' => true ],
+			'content' => [ 'post-nav-link-previous', 'post-nav-link-next' ]
+		];
+	});
+
+	Composition::setup_component( 'post-nav-link-previous', function( $component ) { 
+		return [
+			'content' => render_post_nav_link('previous')
+		];
+	});
+
+	Composition::setup_component( 'post-nav-link-next', function( $component ) { 
+		return [
+			'content' => render_post_nav_link('next')
+		];
+	});
+
 
 	/**
 	 * Template: plural pages
@@ -279,6 +296,13 @@ add_action( 'wp', function() {
 
 			return $component;
 		});	
+
+		Composition::setup_component( 'page-footer', function( $component ) {
+
+			Composition::component_add_after( $component['content'], 'post-nav' );
+
+			return $component;
+		});	
 	}
 });
 
@@ -288,12 +312,12 @@ add_action( 'wp', function() {
  */ 
 add_action( 'wp', function() {
 
-	Composition::setup_component( 'plural-post', function( $component ) {
+	// Composition::setup_component( 'plural-post', function( $component ) {
 
-		Composition::component_move_before( $component['content'], 'plural-post-footer' );
+	// 	Composition::component_move_before( $component['content'], 'plural-post-footer' );
 
-		return $component;
-	});	
+	// 	return $component;
+	// });	
 
 }, 99);
 

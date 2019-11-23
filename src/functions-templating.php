@@ -268,56 +268,31 @@ function render_site_nav() {
    	return $render;
 }
 
-
 /**
  * Render post nav
+ *
+ * @param string $type (next or previous)
+ * @return string
  */
-function render_post_nav() {
+function render_post_nav_link( $type = '' ) {
 
-	$previous_link = get_previous_post_link( '%link' );
-	$next_link     = get_next_post_link( '%link' );
+	$function = "get_{$type}_post_link";
 
-	$class_modifier = '';
-
-	if ( ! $previous_link && ! $next_link ) {
-		return;
-	}
-
-	if ( ! $previous_link ) {
-		$class_modifier = 'post-nav--first-post';
-	}
-	elseif ( ! $next_link ) {
-		$class_modifier = 'post-nav--last-post';	
+	if (is_callable($function)) {
+		$link = $function( '%link' );
 	}
 
 	ob_start();
 	?>
-
-	<nav class="post-nav <?= $class_modifier ?>" role="navigation">
-		<h2 class="screen-reader-text"><?= __( 'Post navigation' ) ?></h2>
-
-		<div class="post-nav__links">
 			
-			<?php if ( $previous_link ) : ?>
+	<?php if ( $link ) : ?>
 
-				<div class="post-nav__previous">
-					<div class="post-nav__link-description"><?= __( 'Previous article:', 'ejo-base' ) ?></div>
-					<?= $previous_link ?>
-				</div>
-
-			<?php endif ;?>
-
-			<?php if ( $next_link ) : ?>
-
-				<div class="post-nav__next">
-					<div class="post-nav__link-description"><?= __( 'Next article:', 'ejo-base' ) ?></div>
-					<?= $next_link ?>
-				</div>
-
-			<?php endif ;?>
-
+		<div class="post-nav__link post-nav__link--<?= $type ?>">
+			<div class="post-nav__link-description"><?= __( ucfirst($type) .' article:', 'ejo-base' ) ?></div>
+			<?= $link ?>
 		</div>
-	</nav>
+
+	<?php endif ;?>
 
 	<?php 
 	$render = ob_get_clean();
