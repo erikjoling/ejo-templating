@@ -213,7 +213,7 @@ final class Composition {
 			$classes[] = $bem_element;
 		}
 
-		$classes += $element['extra_classes'];
+		$classes = array_merge($classes, $element['extra_classes']);
 		$classes = render_classes($classes);
 
 		return $classes;
