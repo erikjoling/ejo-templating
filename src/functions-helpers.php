@@ -3,7 +3,7 @@
  * Helpers
  */
 
-namespace Ejo\Tmpl;
+namespace Ejo\Templating;
 
 
 /** 
@@ -55,6 +55,12 @@ function render_attr( $attr ) {
 
 	return trim( $html );
 }
+
+// function find_array_value( array $array, $lookup_value ) {
+// 	$index = array_search( $lookup_value, $array );
+	
+// 	return false === $index ? 0 : $index;
+// }
 
 function array_insert_before( array $array, $lookup_value, $insert_value ) {
 

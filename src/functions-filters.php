@@ -1,5 +1,5 @@
 <?php
-namespace Ejo\Tmpl;
+namespace Ejo\Templating;
 
 add_filter( 'body_class', __NAMESPACE__ . '\body_class_filter', 10, 2 );
 

@@ -3,7 +3,7 @@
  * Templating functions.
  */
 
-namespace Ejo\Tmpl;
+namespace Ejo\Templating;
 
 function start_engine() {
 	setup_components();

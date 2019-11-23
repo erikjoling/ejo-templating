@@ -3,7 +3,7 @@
  * Templating functions.
  */
 
-namespace Ejo\Tmpl;
+namespace Ejo\Templating;
 
 
 add_action( 'wp', function() {

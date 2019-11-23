@@ -1,5 +1,5 @@
 <?php
-use function Ejo\Tmpl\display_svg;
+use function Ejo\Templating\display_svg;
 ?>
 
 <button class="site-nav-toggle" data-toggle="offcanvas-panel" aria-expanded="false">

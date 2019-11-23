@@ -2,7 +2,7 @@
 /**
  * Page Footer
  */
-use function Ejo\Tmpl\load_components;
+use function Ejo\Templating\load_components;
 
 // This component expects the following data
 $data['components']     = $data['components'] ?? [ 'site/footer-blocks', 'site/meta' ];

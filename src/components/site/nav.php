@@ -1,6 +1,6 @@
 <?php 
 
-use function Ejo\Tmpl\get_nav_location;
+use function Ejo\Templating\get_nav_location;
 use function Hybrid\Menu\display_name;
 
 ?>

@@ -3,7 +3,7 @@
  * Templating functions.
  */
 
-namespace Ejo\Tmpl;
+namespace Ejo\Templating;
 
 
 add_action( 'wp', function() {
@@ -262,7 +262,7 @@ add_action( 'wp', function() {
 		Composition::setup_component( 'page-main', function( $component ) {
 
 
-			Composition::component_append( $component['content'], 'the-post-loop' );
+			Composition::component_add_after( $component['content'], 'the-post-loop' );
 
 			return $component;
 		});
@@ -275,7 +275,7 @@ add_action( 'wp', function() {
 
 		Composition::setup_component( 'page-header', function( $component ) {
 
-			Composition::component_append( $component['content'], 'post-meta', 'page-title' );
+			Composition::component_add_after( $component['content'], 'post-meta', 'page-title' );
 
 			return $component;
 		});	
@@ -288,9 +288,9 @@ add_action( 'wp', function() {
  */ 
 add_action( 'wp', function() {
 
-	Composition::setup_component( 'page-main', function( $component ) {
+	Composition::setup_component( 'plural-post', function( $component ) {
 
-		Composition::component_prepend( $component['content'], 'page-title' );
+		Composition::component_move_before( $component['content'], 'plural-post-footer' );
 
 		return $component;
 	});	

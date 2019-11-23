@@ -3,7 +3,7 @@
  * Post Meta Date
  */
 
-use function Ejo\Tmpl\render_svg;
+use function Ejo\Templating\render_svg;
 use function Hybrid\Post\display_date;
 
 // This component expects the following data

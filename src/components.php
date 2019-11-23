@@ -5,7 +5,7 @@
  * Deceprecated!
  */
 
-namespace Ejo\Tmpl;
+namespace Ejo\Templating;
 
 function setup_site_component( $component ) {
 	return [

@@ -3,7 +3,7 @@
  * Footer Blocks
  */
 
-use function Ejo\Tmpl\display_footer_blocks;
+use function Ejo\Templating\display_footer_blocks;
 ?>
 
 <?php display_footer_blocks(); ?>

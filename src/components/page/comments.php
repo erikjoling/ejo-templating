@@ -1,6 +1,6 @@
 <?php 
 
-use function Ejo\Tmpl\load_components;
+use function Ejo\Templating\load_components;
 
 // This component expects the following data
 $data['components']     = [ 'page/title' ];

@@ -3,7 +3,7 @@
  * Block Area for Site Content Main
  */
 
-use function Ejo\Tmpl\load_components;
+use function Ejo\Templating\load_components;
 
 // This component expects the following data
 $data['components']     = $data['components'] ?? [ 'page/content' ];

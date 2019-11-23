@@ -3,7 +3,7 @@
  * Debug functions.
  */
 
-namespace Ejo\Tmpl;
+namespace Ejo\Templating;
 
 /**
  * Log data to wp-content/debug.log

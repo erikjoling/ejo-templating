@@ -3,7 +3,7 @@
  * Post Meta Author
  */
 
-use function Ejo\Tmpl\render_svg;
+use function Ejo\Templating\render_svg;
 
 // This component expects the following data
 $data['svg']  = $data['svg']  ?? render_svg('user-circle');

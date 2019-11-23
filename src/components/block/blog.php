@@ -3,7 +3,7 @@
  * Blog block
  */
 
-namespace Ejo\Tmpl;
+namespace Ejo\Templating;
 
 // This component expects the following data
 $data['align']  = $data['align']  ?? 'wide';

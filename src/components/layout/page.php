@@ -3,8 +3,8 @@
  * Block Area for Site Main
  */
 
-use function Ejo\Tmpl\load_components;
-use function Ejo\Tmpl\the_post;
+use function Ejo\Templating\load_components;
+use function Ejo\Templating\the_post;
 
 // This component expects the following data
 $data['components']     = $data['components'] ?? [ 'layout/page-header', 'layout/page-content', 'layout/page-footer', 'page/comments' ];

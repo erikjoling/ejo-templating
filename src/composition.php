@@ -3,7 +3,7 @@
  * Composition Class
  */
 
-namespace Ejo\Tmpl;
+namespace Ejo\Templating;
 
 if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
 
@@ -305,34 +305,78 @@ final class Composition {
 	}
 
 
-	public static function component_prepend( &$components, $value, $prepend_before = null ) {
+	public static function component_add_before( &$components, $component_id, $target_component_id = null ) {
 		$components = ( is_array($components) ) ? $components : [];
 
-		if ($prepend_before) {
-			$components = array_insert_before($components, $prepend_before, $value);
+		if ($target_component_id) {
+			$components = array_insert_before($components, $target_component_id, $component_id);
 		}
 		else {
-			array_unshift($components, $value);
+			array_unshift($components, $component_id);
 		}
 	}
 
-	public static function component_append( &$components, $value, $prepend_after = null ) {
+	public static function component_add_after( &$components, $component_id, $target_component_id = null ) {
 		$components = ( is_array($components) ) ? $components : [];
 
-		if ($prepend_after) {
-			$components = array_insert_after($components, $prepend_after, $value);
+		if ($target_component_id) {
+			$components = array_insert_after($components, $target_component_id, $component_id);
 		}
 		else {
-			array_push($components, $value);
+			array_push($components, $component_id);
 		}
 	}
 
-	public static function component_remove( &$components, $lookup_value ) {
-		$components = remove_value_from_array($components, $lookup_value);
+	public static function component_move_before( &$components, $component_id, $target_component_id = null ) {
+		$components = ( is_array($components) ) ? $components : [];
+
+		// Find component
+		$index = array_search( $component_id, $components );
+
+		// Only move component if it is found
+		if ($index !== false) {
+
+			// First remove component
+			static::component_remove($components, $component_id);
+
+			// Then add component
+			static::component_add_before($components, $component_id, $target_component_id);
+		}
 	}
 
+	public static function component_move_after( &$components, $component_id, $target_component_id = null ) {
+		$components = ( is_array($components) ) ? $components : [];
+
+		// Find component
+		$index = array_search( $component_id, $components );
+
+		// Only move component if it is found
+		if ($index !== false) {
+
+			// First remove component
+			static::component_remove($components, $component_id);
+
+			// Then add component
+			static::component_add_after($components, $component_id, $target_component_id);
+		}
+	}
+
+	public static function component_remove( &$components, $component_id ) {
+		$components = remove_value_from_array($components, $component_id);
+	}
+
+	/**
+	 * Setup Component
+	 *
+	 * We are using 
+	 *
+	 * @param string Name
+	 * @param array Component (element, content)
+	 */
 	public static function setup_component( $name, $component ) {
 
+		add_filter( "ejo/composition/component/{$name}", $component, 10, 2 );
+		
 		// Passing an array as closure prevents directly calling a function when
 		// setting up the component. When using a anonymous function it only
 		// gets called when the filter is due
@@ -347,7 +391,7 @@ final class Composition {
 
 		// // Else, we assume the component is a function
 		// else {
-			add_filter( "ejo/composition/component/{$name}", $component, 10, 2 );
+		// 	add_filter( "ejo/composition/component/{$name}", $component, 10, 2 );
 		// }
 
 	}

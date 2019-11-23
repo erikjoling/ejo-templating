@@ -3,7 +3,7 @@
  * Initialize cleanup related functionality
  */
 
-namespace Ejo\Tmpl;
+namespace Ejo\Templating;
 
 require_once __DIR__ . '/functions-debugging.php';
 require_once __DIR__ . '/functions-helpers.php';
