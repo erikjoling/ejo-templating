@@ -8,6 +8,9 @@ add_filter( 'nav_menu_item_id',           __NAMESPACE__ . '\nav_menu_item_id',  
 add_filter( 'nav_menu_submenu_css_class', __NAMESPACE__ . '\nav_menu_submenu_css_class', 5    );
 add_filter( 'nav_menu_link_attributes',   __NAMESPACE__ . '\nav_menu_link_attributes',   5    );
 
+add_filter( 'excerpt_more',   __NAMESPACE__ . '\edit_excerpt_link' );
+add_filter( 'excerpt_length', __NAMESPACE__ . '\excerpt_length' );
+
 /**
  * Returns the body classes.
  *
@@ -134,4 +137,19 @@ function nav_menu_submenu_css_class( $classes ) {
 	$classes = [ 'site-nav__sub-menu' ];
 
 	return $classes;
+}
+
+
+/**
+ * EXCERPT
+ */
+
+function edit_excerpt_link( $more ) {
+	$bem_block = Composition::get_parent();
+
+    return "&nbsp;<span class=\"{$bem_block}__excerpt-delimiter\">...<span>";
+} 
+
+function excerpt_length( $length ) {
+	return 32;
 }
