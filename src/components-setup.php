@@ -206,7 +206,13 @@ add_action( 'wp', function() {
 	Composition::setup_component( 'plural-post-footer', function( $component ) { 
 		return [
 			'element' => [ 'tag' => 'footer', 'bem_block' => false, 'bem_element' => 'footer' ],
-			'content' => []
+			'content' => [ 'plural-post-read-more' ]
+		]; 
+	});
+
+	Composition::setup_component( 'plural-post-read-more', function( $component ) { 
+		return [
+			'content' => '<a href="'. get_the_permalink() .'" class="'. Composition::get_parent() .'__read-more">'. __('Read more', 'ejo-base') .'</a>'
 		]; 
 	});
 
