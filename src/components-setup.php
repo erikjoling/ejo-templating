@@ -185,7 +185,7 @@ add_action( 'wp', function() {
 	Composition::setup_component( 'plural-post-header', function( $component ) { 
 		return [
 			'element' => [ 'tag' => 'header', 'bem_block' => false, 'bem_element' => 'header' ],
-			'content' => [ 'plural-post-title' ]
+			'content' => [ 'plural-post-title', 'post-meta' ]
 		]; 
 	});
 
@@ -206,11 +206,11 @@ add_action( 'wp', function() {
 	Composition::setup_component( 'plural-post-footer', function( $component ) { 
 		return [
 			'element' => [ 'tag' => 'footer', 'bem_block' => false, 'bem_element' => 'footer' ],
-			'content' => [ 'post-meta' ]
+			'content' => []
 		]; 
 	});
 
-	Composition::setup_component( 'post-meta', function( $component ) { 
+	Composition::setup_component( 'post-meta', function( $component ) {
 		return [
 			'element' => [ 'tag' => 'div' ],
 			'content' => [ 'post-author', 'post-date', 'post-categories' ]

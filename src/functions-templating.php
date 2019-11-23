@@ -137,40 +137,24 @@ function render_plural_post_content() {
 }
 
 function render_post_author() {
-	$svg = '';
-	ob_start();
-	?>
+	$svg 	= apply_filters('ejo/templating/svg/author', '');
+	$author = get_the_author();
 
-	<?= $svg ?>
-	<span><?= get_the_author() ?></span>
-	
-	<?php
-	return ob_get_clean();
+	return "{$svg}<span>{$author}</span>";
 }
 
 function render_post_date() {
-	$svg = '';
-	ob_start();
-	?>
+	$svg  = apply_filters('ejo/templating/svg/date', '');
+	$date = get_the_date();
 
-	<?= $svg ?>
-	<span><?= get_the_date() ?></span>
-	
-	<?php
-	return ob_get_clean();
+	return "{$svg}<span>{$date}</span>";
 }
 
 function render_post_categories() {
-	$svg = '';
-	$separator = ', ';
-	ob_start();
-	?>
-
-	<?= $svg ?>
-	<span><?= get_the_term_list( get_the_ID(), 'category', '', $separator, '' ) ?></span>
+	$svg  		= apply_filters('ejo/templating/svg/categories', '');
+	$categories = get_the_term_list( get_the_ID(), 'category', '', ', ', '' );
 	
-	<?php
-	return ob_get_clean();
+	return "{$svg}<span>{$categories}</span>";
 }
 
 
@@ -204,11 +188,11 @@ function render_site_nav_toggle() {
 		<span class="screen-reader-text"><?= __('Open menu', 'ejo-base'); ?></span>
 
 		<svg class="icon site-nav-toggle__icon site-nav-toggle__icon--open" aria-hidden="true" focusable="false">
-			<?php //display_svg('bars') ?>
+			<?php echo apply_filters('ejo/templating/svg/site-nav-toggle-open', ''); ?>
 		</svg>
 
 		<svg class="icon site-nav-toggle__icon site-nav-toggle__icon--close" aria-hidden="true" focusable="false">
-			<?php //display_svg('times') ?>
+			<?php echo apply_filters('ejo/templating/svg/site-nav-toggle-close', ''); ?>
 		</svg>
 
 		<span class="site-nav-toggle__text"><?= __('Menu', 'ejo-base'); ?></span>
@@ -282,13 +266,15 @@ function render_post_nav_link( $type = '' ) {
 		$link = $function( '%link' );
 	}
 
+	$bem_block = Composition::get_parent();
+
 	ob_start();
 	?>
 			
 	<?php if ( $link ) : ?>
 
-		<div class="post-nav__link post-nav__link--<?= $type ?>">
-			<div class="post-nav__link-description"><?= __( ucfirst($type) .' article:', 'ejo-base' ) ?></div>
+		<div class="<?= $bem_block ?>__link <?= $bem_block ?>__link--<?= $type ?>">
+			<div class="<?= $bem_block ?>__link-description"><?= __( ucfirst($type) .' article:', 'ejo-base' ) ?></div>
 			<?= $link ?>
 		</div>
 
