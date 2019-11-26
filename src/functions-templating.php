@@ -174,12 +174,12 @@ function render_post_categories() {
 
 function render_recent_posts( $args ) {
 
-	return Composition::render_component( 'recent-posts', [
-		'content' => [ 
-			'recent-posts-header', 
-			[ 'name' => 'recent-posts-main', 'content' => render_post_loop( $args )	],
-		]
-	] );
+	// return Composition::render_component( 'recent-posts', [
+	// 	'content' => [ 
+	// 		'recent-posts-header', 
+	// 		[ 'name' => 'recent-posts-main', 'content' => render_post_loop( $args )	],
+	// 	]
+	// ] );
 }
 
 

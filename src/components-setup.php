@@ -69,161 +69,161 @@ add_action( 'wp', function() {
 	 * Site and Page stuff
 	 */
 
-	Composition::component( 'site', function( $component ) { 
-		return [
-			'element' => [ 'tag' => 'div', 'inner_wrap' => true ],
-			'content' => [ 'site-header', 'site-main', 'site-footer' ]
-		]; 
+	Composition::component_setup( 'site', function( $component ) { 
+		$component['element'] = [ 'tag' => 'div', 'inner_wrap' => true ];
+		$component['content'] = [ 'site-header', 'site-main', 'site-footer' ]; 
+
+		return $component;
 	});
 
-	Composition::component( 'site-header', function( $component ) { 
-		return [ 
-			'element' => [ 'tag' => 'header', 'inner_wrap' => true, 'force_display' => true ],
-			'content' => [ 'site-branding', 'site-nav-toggle', 'site-nav' ]
-		]; 
+	Composition::component_setup( 'site-header', function( $component ) { 
+		$component['element'] = [ 'tag' => 'header', 'inner_wrap' => true, 'force_display' => true ];
+		$component['content'] = [ 'site-branding', 'site-nav-toggle', 'site-nav' ];
+		
+		return $component;
 	});
 
-	Composition::component( 'site-main', function( $component ) { 
-		return [ 
-			'element' => [ 'tag' => 'main', 'inner_wrap' => true, 'force_display' => true ],
-			'content' => [ 'page' ]
-		]; 
+	Composition::component_setup( 'site-main', function( $component ) { 
+		$component['element'] = [ 'tag' => 'main', 'inner_wrap' => true, 'force_display' => true ];
+		$component['content'] = [ 'page' ];
+		
+		return $component;
 	});
 
-	Composition::component( 'site-footer', function( $component ) { 
-		return [ 
-			'element' => [ 'tag' => 'footer', 'inner_wrap' => true, 'force_display' => true ],
-			'content' => []
-		]; 
+	Composition::component_setup( 'site-footer', function( $component ) { 
+		$component['element'] = [ 'tag' => 'footer', 'inner_wrap' => true, 'force_display' => true ];
+		$component['content'] = [];
+		
+		return $component;
 	});
 
-	Composition::component( 'page', function( $component ) { 
-		return [ 
-			'element' => [ 'tag' => 'article', 'inner_wrap' => true, 'force_display' => true ],
-			'content' => [ 'the-post', 'page-header', 'page-main', 'page-footer' ]
-		]; 
+	Composition::component_setup( 'page', function( $component ) { 
+		$component['element'] = [ 'tag' => 'article', 'inner_wrap' => true, 'force_display' => true ];
+		$component['content'] = [ 'the-post', 'page-header', 'page-main', 'page-footer' ];
+		
+		return $component;
 	});
 
-	Composition::component( 'page-header', function( $component ) { 
-		return [ 
-			'element' => [ 'tag' => 'header', 'inner_wrap' => true, 'force_display' => true ],
-			'content' => [ 'breadcrumbs', 'page-title' ]
-		]; 
+	Composition::component_setup( 'page-header', function( $component ) { 
+		$component['element'] = [ 'tag' => 'header', 'inner_wrap' => true, 'force_display' => true ];
+		$component['content'] = [ 'breadcrumbs', 'page-title' ];
+		
+		return $component;
 	});
 
-	Composition::component( 'page-main', function( $component ) { 
-		return [ 
-			'element' => [ 'tag' => 'div', 'inner_wrap' => true, 'force_display' => true ],
-			'content' => [ 'page-content' ]
-		]; 
+	Composition::component_setup( 'page-main', function( $component ) { 
+		$component['element'] = [ 'tag' => 'div', 'inner_wrap' => true, 'force_display' => true ];
+		$component['content'] = [ 'page-content' ];
+		
+		return $component;
 	});
 
-	Composition::component( 'page-footer', function( $component ) { 
-		return [ 
-			'element' => [ 'tag' => 'footer', 'inner_wrap' => true ],
-			'content' => []
-		]; 
+	Composition::component_setup( 'page-footer', function( $component ) { 
+		$component['element'] = [ 'tag' => 'footer', 'inner_wrap' => true ];
+		$component['content'] = [];
+		
+		return $component;
 	});
 
-	Composition::component( 'page-title', function( $component ) { 
+	Composition::component_setup( 'page-title', function( $component ) { 
 
-		return [ 
-			'element' => [ 'tag' => 'h1', 'bem_element' => 'title' ],
-			'content' => get_page_title()
-		]; 
+		$component['element'] = [ 'tag' => 'h1', 'bem_element' => 'title' ];
+		$component['content'] = get_page_title();
+		
+		return $component;
 	});
 
-	Composition::component( 'site-branding', function( $component ) { 
-		return [
-			'content' => render_site_branding() 
-		]; 
+	Composition::component_setup( 'site-branding', function( $component ) { 
+		$component['content'] = render_site_branding();
+		
+		return $component;
 	});
 
-	Composition::component( 'site-nav-toggle', function( $component ) { 
-		return [
-			'content' => render_site_nav_toggle() 
-		]; 
+	Composition::component_setup( 'site-nav-toggle', function( $component ) { 
+		$component['content'] = render_site_nav_toggle();
+		
+		return $component;
 	});
 
-	Composition::component( 'site-nav', function( $component ) { 
-		return [
-			'content' => render_site_nav() 
-		]; 
+	Composition::component_setup( 'site-nav', function( $component ) { 
+		$component['content'] = render_site_nav();
+		
+		return $component;
 	});
 
-	Composition::component( 'page-content', function( $component ) { 
-		return [
-			'content' => render_page_content() 
-		]; 
+	Composition::component_setup( 'page-content', function( $component ) { 
+		$component['content'] = render_page_content();
+		
+		return $component;
 	});
 
-	Composition::component( 'breadcrumbs', function( $component ) { 
-		return [
-			'content' => render_breadcrumbs() 
-		]; 
+	Composition::component_setup( 'breadcrumbs', function( $component ) { 
+		$component['content'] = render_breadcrumbs();
+		
+		return $component;
 	});
 
-	Composition::component( 'the-post', '\\the_post' );
+	Composition::component_setup( 'the-post', '\\the_post' );
 
 	/**
 	 * Post stuff
 	 */
 
-	Composition::component( 'the-post-loop', function( $component ) { 
-		return [
-			'content' => render_post_loop() 
-		]; 
+	Composition::component_setup( 'the-post-loop', function( $component ) { 
+		$component['content'] = render_post_loop();
+		
+		return $component;
 	});
 
-	Composition::component( 'plural-post', function( $component ) { 
+	Composition::component_setup( 'plural-post', function( $component ) { 
 		return [
 			'element' => [ 'tag' => 'article' ],
 			'content' => [ 'plural-post-header', 'plural-post-main', 'plural-post-footer' ]
 		]; 
 	});
 
-	Composition::component( 'plural-post-header', function( $component ) { 
+	Composition::component_setup( 'plural-post-header', function( $component ) { 
 		return [
 			'element' => [ 'tag' => 'header', 'bem_block' => false, 'bem_element' => 'header' ],
 			'content' => [ 'plural-post-title', 'post-meta' ]
 		]; 
 	});
 
-	Composition::component( 'plural-post-title', function( $component ) { 
+	Composition::component_setup( 'plural-post-title', function( $component ) { 
 		return [
 			'element' => [ 'tag' => 'h3', 'bem_block' => false, 'bem_element' => 'title' ],
 			'content' => '<a href="'. get_the_permalink() .'">'. get_the_title() .'</a>'
 		]; 
 	});
 
-	Composition::component( 'plural-post-main', function( $component ) { 
+	Composition::component_setup( 'plural-post-main', function( $component ) { 
 		return [
 			'element' => [ 'tag' => 'div', 'bem_block' => false, 'bem_element' => 'main' ],
 			'content' => render_plural_post_content() 
 		]; 
 	});
 
-	Composition::component( 'plural-post-footer', function( $component ) { 
+	Composition::component_setup( 'plural-post-footer', function( $component ) { 
 		return [
 			'element' => [ 'tag' => 'footer', 'bem_block' => false, 'bem_element' => 'footer' ],
 			'content' => [ 'plural-post-read-more' ]
 		]; 
 	});
 
-	Composition::component( 'plural-post-read-more', function( $component ) { 
+	Composition::component_setup( 'plural-post-read-more', function( $component ) { 
 		return [
 			'content' => '<a href="'. get_the_permalink() .'" class="'. Composition::get_parent() .'__read-more">'. __('Read more', 'ejo-base') .'</a>'
 		]; 
 	});
 
-	Composition::component( 'post-meta', function( $component ) {
+	Composition::component_setup( 'post-meta', function( $component ) {
 		return [
 			'element' => [ 'tag' => 'div' ],
 			'content' => [ 'post-author', 'post-date', 'post-categories' ]
 		]; 
 	});
 
-	Composition::component( 'post-author', function( $component ) { 
+	Composition::component_setup( 'post-author', function( $component ) { 
 		$bem_element = (Composition::get_parent() == 'post-meta') ? 'author' : true;
 
 		return [
@@ -232,7 +232,7 @@ add_action( 'wp', function() {
 		]; 
 	});
 
-	Composition::component( 'post-date', function( $component ) { 
+	Composition::component_setup( 'post-date', function( $component ) { 
 		$bem_element = (Composition::get_parent() == 'post-meta') ? 'date' : true;
 
 		return [
@@ -241,7 +241,7 @@ add_action( 'wp', function() {
 		]; 
 	});
 
-	Composition::component( 'post-categories', function( $component ) { 
+	Composition::component_setup( 'post-categories', function( $component ) { 
 		$bem_element = (Composition::get_parent() == 'post-meta') ? 'categories' : true;
 
 		return [
@@ -250,26 +250,26 @@ add_action( 'wp', function() {
 		]; 
 	});
 
-	Composition::component( 'post-nav', function( $component ) { 
+	Composition::component_setup( 'post-nav', function( $component ) { 
 		return [
 			'element' => [ 'tag' => 'nav', 'inner_wrap' => true ],
 			'content' => [ 'post-nav-link-previous', 'post-nav-link-next' ]
 		];
 	});
 
-	Composition::component( 'post-nav-link-previous', function( $component ) { 
+	Composition::component_setup( 'post-nav-link-previous', function( $component ) { 
 		return [
 			'content' => render_post_nav_link('previous')
 		];
 	});
 
-	Composition::component( 'post-nav-link-next', function( $component ) { 
+	Composition::component_setup( 'post-nav-link-next', function( $component ) { 
 		return [
 			'content' => render_post_nav_link('next')
 		];
 	});
 
-	Composition::component( 'recent-posts', function( $component ) {
+	Composition::component_setup( 'recent-posts', function( $component ) {
 
 		return [
 			'element' => [ 'tag' => 'section' ],
@@ -277,7 +277,7 @@ add_action( 'wp', function() {
 		];
 	});
 
-	Composition::component( 'recent-posts-header', function( $component ) {
+	Composition::component_setup( 'recent-posts-header', function( $component ) {
 
 		return [
 			'element' => [ 'tag' => 'header', 'bem_block' => false, 'bem_element' => 'header' ],
@@ -285,7 +285,7 @@ add_action( 'wp', function() {
 		];
 	});
 
-	Composition::component( 'recent-posts-main', function( $component ) {
+	Composition::component_setup( 'recent-posts-main', function( $component ) {
 
 		return [
 			'element' => [ 'tag' => 'div', 'bem_block' => false, 'bem_element' => 'main' ],
@@ -300,14 +300,14 @@ add_action( 'wp', function() {
 	 */
 	if (is_plural_page()) {
 
-		Composition::component( 'page', function( $component ) {
+		Composition::component_setup( 'page', function( $component ) {
 
 			Composition::component_remove( $component['content'], 'the-post' );
 
 			return $component;
 		});
 
-		Composition::component( 'page-main', function( $component ) {
+		Composition::component_setup( 'page-main', function( $component ) {
 
 
 			Composition::component_add_after( $component['content'], 'the-post-loop' );
@@ -321,14 +321,14 @@ add_action( 'wp', function() {
 	 */
 	if ( is_singular_page('post') ) {
 
-		Composition::component( 'page-header', function( $component ) {
+		Composition::component_setup( 'page-header', function( $component ) {
 
 			Composition::component_add_after( $component['content'], 'post-meta', 'page-title' );
 
 			return $component;
 		});	
 
-		Composition::component( 'page-footer', function( $component ) {
+		Composition::component_setup( 'page-footer', function( $component ) {
 
 			Composition::component_add_after( $component['content'], 'post-nav' );
 
@@ -343,7 +343,7 @@ add_action( 'wp', function() {
  */ 
 add_action( 'wp', function() {
 
-	// Composition::component( 'page-header', function( $component ) {
+	// Composition::component_setup( 'page-header', function( $component ) {
 
 	// 	Composition::component_move_before( $component['content'], 'page-title', 'breadcrumbs' );
 

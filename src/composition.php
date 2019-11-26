@@ -35,18 +35,27 @@ final class Composition {
 	 */
 	public static function display() {
 
-		echo static::render_component( 'site' );
+		echo static::render();
 	}
 
 	/**
 	 * Render site
 	 *
 	 * @param 	String name
-	 * @return 	String compontent
+	 * @return 	String component
 	 */
 	public static function render() {
 
-		return static::render_component( 'site' );
+		$component = [
+			'name'	  => 'site',
+			// 'element' => [ 'inner_wrap' => true ],
+			// 'content' => [ 'site-header', 'site-main', 'site-footer' ],
+			// 'content' => 'hallo!',
+			// 'element' => false,
+		];
+
+		// return static::render_component( 'site' );
+		return static::render_component( $component );
 	}
 
 	/**
@@ -55,9 +64,9 @@ final class Composition {
 	 * @param 	String name
 	 * @return 	void
 	 */
-	public static function display_component( $name ) {
+	public static function display_component( $component ) {
 
-		echo static::render_component($name);
+		echo static::render_component( $component );
 	}
 
 	/**
@@ -72,34 +81,37 @@ final class Composition {
 		$component = ( is_string($component) ) ? [ 'name' => $component ] : $component;
 
 		// We don't like empty component names
-		if ( empty($component['name']) || ! is_string($component['name']) ) {
+		if ( empty($component['name']) ) {
 			return '';
 		}
 
-		// Sanitize the name
-		$name = esc_html( $component['name'] );
+		// Sanitize the name and store it. It should not be changed
+		$name = $component['name'] = esc_html( $component['name'] );
 
-		// Let other scripts setup or manipulate the component
-		//
-		// Note: sometimes the filter only runs a function without returning a value
-		//		 For example: the-post --> the_post();
-		$component_defaults = apply_filters( "ejo/composition/component/{$name}", $component );
+		// Setup component
+		$component_setup = apply_filters( "ejo/composition/component_setup/{$name}", [] );
 
-		// Merge component with passed component
-		$component = wp_parse_args( $component, $component_defaults);
+		/**
+		 * Sometimes the filter only runs a function without returning a value. In that
+		 * case we set element and content to false. For example: the-post --> the_post();
+		 */
+		$component_setup = $component_setup ?? [ 'element' => false, 'content' => false ];
+
+		// Merge the component with the setup
+		$component = array_replace_recursive($component_setup, $component);
 
 		// Give theme opportunity to overwrite passed component
 		$component = apply_filters( "ejo/composition/component_overwrite/{$name}", $component );
 
 		// Process component parts
-		$element = $component['element'] ?? false;
-		$content = $component['content'] ?? false;
+		$element = $component['element'] ?? [];
+		$content = $component['content'] ?? [];
 
 		// Setup render
 		$render = '';
 		
-		// Only do stuff if $element and $content are not false
-		if ( $element || $content ) {
+		// Only do stuff if $element and $content are not expicitely set as false
+		if ( $element || is_array($element) || $content || is_array($content)) {
 
 			// Setup element
 			$element = static::setup_component_element($element, $name);
@@ -409,9 +421,9 @@ final class Composition {
 	 * @param string Name
 	 * @param array Component (element, content)
 	 */
-	public static function component( $name, $component ) {
+	public static function component_setup( $name, $component ) {
 
-		add_filter( "ejo/composition/component/{$name}", $component, 10, 2 );
+		add_filter( "ejo/composition/component_setup/{$name}", $component, 10, 2 );
 		
 		// Passing an array as closure prevents directly calling a function when
 		// setting up the component. When using a anonymous function it only
