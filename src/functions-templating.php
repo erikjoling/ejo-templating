@@ -172,6 +172,18 @@ function render_post_categories() {
 	return "{$svg}<span>{$categories}</span>";
 }
 
+function render_recent_posts( $args ) {
+
+	return Composition::render_component( 'recent-posts', [
+		'content' => [ 
+			'recent-posts-header', 
+			'recent-posts-main' => [
+				'content' => render_post_loop( $args )
+			],
+		]
+	] );
+}
+
 
 /**
  * Render the footer line
