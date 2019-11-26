@@ -63,25 +63,33 @@ final class Composition {
 	/**
 	 * Render component
 	 *
-	 * @param String name
-	 * @return String component
+	 * @param 	string $component (name), array $component ([name, element, content])
+	 * @return 	String $render
 	 */
-	public static function render_component( $name, $component = [] ) {
+	public static function render_component( $component ) {
+		
+		// If component is string then setup empty component with name
+		$component = ( is_string($component) ) ? [ 'name' => $component ] : $component;
+
+		// We don't like empty component names
+		if ( empty($component['name']) || ! is_string($component['name']) ) {
+			return '';
+		}
 
 		// Sanitize the name
-		$name = esc_html( $name );
+		$name = esc_html( $component['name'] );
 
 		// Let other scripts setup or manipulate the component
 		//
 		// Note: sometimes the filter only runs a function without returning a value
 		//		 For example: the-post --> the_post();
-		$component_defaults = apply_filters( "ejo/composition/component/{$name}", [], $name );
+		$component_defaults = apply_filters( "ejo/composition/component/{$name}", $component );
 
 		// Merge component with passed component
 		$component = wp_parse_args( $component, $component_defaults);
 
 		// Give theme opportunity to overwrite passed component
-		$component = apply_filters( "ejo/composition/component_overwrite/{$name}", $component, $name );
+		$component = apply_filters( "ejo/composition/component_overwrite/{$name}", $component );
 
 		// Process component parts
 		$element = $component['element'] ?? false;
@@ -150,42 +158,43 @@ final class Composition {
 		return $element;
 	}
 
+	/**
+	 * Render the contents of a component
+	 *
+	 * @param 	string $content (output) | array $content (components)
+	 * @return 	string $render
+	 */ 
 	private static function render_component_content( $content ) {
 
 		// Setup render
 		$render = '';
 
+		/**
+		 * Content could be a string, in which case we render it.
+		 * And the content could be an array, in which case we assume
+		 * it holds one or more components and we render them.
+		 */
 		if ( is_string($content) ) {
-
 			$render .= $content;
 		}
 		elseif ( is_array($content) ) {
+		
+			foreach ( $content as $component ) {
 
-			/**
-			 * We have 2 situations of $content
-			 *
-			 * 1. [ 'components_name_1', 'components_name_2' ]
-			 * 2. [ 'components_name_1' => [ element, content ], ... ]
-			 *
-			 * So if the value is an array then it's a component, otherwise
-			 * it's a name.
-			 */
-			foreach ( $content as $key => $value ) {
-				$name      = $value;
-				$component = [];
-
-				if (is_array($value)) {
-					$name = $key;
-					$component = $value;
-				}
-
-				$render .= static::render_component( $name, $component );
+				$render .= static::render_component( $component );
 			}
 		}
 
 		return $render;
 	}
 
+	/**
+	 * Wrap the render in an element
+	 *
+	 * @param 	array $element
+	 * @param 	string $render
+	 * @return 	string 
+	 */ 
 	private static function render_component_wrapped( $element, $render ) {
 
 		// Setup render
@@ -221,6 +230,12 @@ final class Composition {
 		return sprintf( $render_format, $render );
 	}
 
+	/**
+	 * Render the classes of the element
+	 *
+	 * @param 	array $element
+	 * @return 	string classes
+	 */ 
 	private static function render_element_classes( $element ) {
 
 		$classes = [];
@@ -328,68 +343,63 @@ final class Composition {
 	 * If no component is found it will be placed at the start
 	 *
 	 * @param array $components
-	 * @param string $component_id
-	 * @param string $target_component_id
+	 * @param string $component | array $component
+	 * @param string $target_component_name
 	 *
 	 * @return void
 	 */
-	public static function component_add_before( &$components, $component_id, $target_component_id = null ) {
+	public static function component_insert_before( &$components, $component, $target_component_name = null ) {
 		$components = ( is_array($components) ) ? $components : [];
 
-		if ( isset($components[$target_component_id]) ) {
-			$components = array_insert_before_key($components, $target_component_id, $component_id);
+		$components = array_insert_before_value($components, $target_component_name, $component);
+	}
+
+	public static function component_insert_after( &$components, $component, $target_component_name = null ) {
+		$components = ( is_array($components) ) ? $components : [];
+
+		if ( isset($components[$target_component_name]) ) {
+			$components = array_insert_after_key($components, $target_component_name, $component);
 		}
 		else {
-			$components = array_insert_before_value($components, $target_component_id, $component_id);
+			$components = array_insert_after_value($components, $target_component_name, $component);
 		}
 	}
 
-	public static function component_add_after( &$components, $component_id, $target_component_id = null ) {
-		$components = ( is_array($components) ) ? $components : [];
-
-		if ( isset($components[$target_component_id]) ) {
-			$components = array_insert_after_key($components, $target_component_id, $component_id);
-		}
-		else {
-			$components = array_insert_after_value($components, $target_component_id, $component_id);
-		}
-	}
-
-	public static function component_move_before( &$components, $component_id, $target_component_id = null ) {
+	public static function component_move_before( &$components, $component, $target_component_name = null ) {
 		$components = ( is_array($components) ) ? $components : [];
 
 		// Only move component if it is found
-		if ( isset($components[$component_id]) || array_search( $component_id, $components ) ) {
+		if ( isset($components[$component]) || array_search( $component, $components ) ) {
 
 			// First remove component
-			static::component_remove($components, $component_id);
+			static::component_remove($components, $component);
 
 			// Then add component
-			static::component_add_before($components, $component_id, $target_component_id);
+			static::component_insert_before($components, $component, $target_component_name);
 		}
 	}
 
-	public static function component_move_after( &$components, $component_id, $target_component_id = null ) {
+	public static function component_move_after( &$components, $component, $target_component_name = null ) {
 		$components = ( is_array($components) ) ? $components : [];
 
 		// Only move component if it is found
-		if ( isset($components[$component_id]) || array_search( $component_id, $components ) ) {
+		if ( isset($components[$component]) || array_search( $component, $components ) ) {
 
 			// First remove component
-			static::component_remove($components, $component_id);
+			static::component_remove($components, $component);
 
 			// Then add component
-			static::component_add_after($components, $component_id, $target_component_id);
+			static::component_insert_after($components, $component, $target_component_name);
 		}
 	}
 
-	public static function component_remove( &$components, $component_id ) {
+	public static function component_remove( &$components, $component ) {
 
-		if ( isset($components[$component_id]) ) {
-			unset($components[$component_id]);
+		if ( isset($components[$component]) ) {
+			unset($components[$component]);
 		}
 		else {
-			$components = array_remove_value($components, $component_id);
+			$components = array_remove_value($components, $component);
 		}
 	}
 

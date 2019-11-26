@@ -177,9 +177,7 @@ function render_recent_posts( $args ) {
 	return Composition::render_component( 'recent-posts', [
 		'content' => [ 
 			'recent-posts-header', 
-			'recent-posts-main' => [
-				'content' => render_post_loop( $args )
-			],
+			[ 'name' => 'recent-posts-main', 'content' => render_post_loop( $args )	],
 		]
 	] );
 }
