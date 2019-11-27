@@ -111,7 +111,7 @@ final class Composition {
 		$render = '';
 		
 		// Only do stuff if $element and $content are not expicitely set as false
-		if ( $element || is_array($element) || $content || is_array($content)) {
+		if ( $element !== false || $content !== false ) {
 
 			// Setup element
 			$element = static::setup_component_element($element, $name);
@@ -363,25 +363,45 @@ final class Composition {
 	public static function component_insert_before( &$components, $component, $target_component_name = null ) {
 		$components = ( is_array($components) ) ? $components : [];
 
-		$components = array_insert_before_value($components, $target_component_name, $component);
+		// Find index
+		$index = static::get_component_index( $components, $target_component_name );
+
+		// Set offset at index or at start
+		$offset = ($index !== false) ? $index : 0;
+
+		// Wrap inside array to insert it correctly
+		$component = [$component];
+
+		// Insert
+		$components = array_insert($components, $offset, $component);
 	}
 
 	public static function component_insert_after( &$components, $component, $target_component_name = null ) {
 		$components = ( is_array($components) ) ? $components : [];
 
-		if ( isset($components[$target_component_name]) ) {
-			$components = array_insert_after_key($components, $target_component_name, $component);
-		}
-		else {
-			$components = array_insert_after_value($components, $target_component_name, $component);
-		}
+		// Find index
+		$index = static::get_component_index( $components, $target_component_name );
+
+		// Set offset after index or at end
+		$offset = ($index !== false) ? $index + 1 : count( $components );
+
+		// Wrap inside array to insert it correctly
+		$component = [$component];
+
+		// Insert
+		$components = array_insert($components, $offset, $component);
 	}
 
 	public static function component_move_before( &$components, $component, $target_component_name = null ) {
 		$components = ( is_array($components) ) ? $components : [];
 
-		// Only move component if it is found
-		if ( isset($components[$component]) || array_search( $component, $components ) ) {
+		// Find the index of the component
+		$component_index = static::get_component_index( $components, $component );
+
+		if ( $component_index !== false ) {
+
+			// Get component
+			$component = $components[$component_index];
 
 			// First remove component
 			static::component_remove($components, $component);
@@ -394,8 +414,13 @@ final class Composition {
 	public static function component_move_after( &$components, $component, $target_component_name = null ) {
 		$components = ( is_array($components) ) ? $components : [];
 
-		// Only move component if it is found
-		if ( isset($components[$component]) || array_search( $component, $components ) ) {
+		// Find the index of the component
+		$component_index = static::get_component_index( $components, $component );
+
+		if ( $component_index !== false ) {
+
+			// Get component
+			$component = $components[$component_index];
 
 			// First remove component
 			static::component_remove($components, $component);
@@ -405,14 +430,59 @@ final class Composition {
 		}
 	}
 
+	/**
+	 * Remove a component from a component list
+	 *
+	 * @param array $components
+	 * @param string $component or array $component
+	 *
+	 * @return integer or false
+	 */
 	public static function component_remove( &$components, $component ) {
 
-		if ( isset($components[$component]) ) {
-			unset($components[$component]);
+		// Setup component name
+		$component_name = ( isset($component['name']) ) ? $component['name'] : $component;
+
+		// Find index
+		$index = static::get_component_index( $components, $component_name );
+
+		// Remove
+		if ( $index !== false ) {
+			unset($components[$index]);
 		}
-		else {
-			$components = array_remove_value($components, $component);
+	}
+
+	/**
+	 * Get the index of component
+	 *
+	 * @param array $components
+	 * @param string $component_name
+	 *
+	 * @return integer or false
+	 */
+	private static function get_component_index( array $components, $component_name ) {
+
+		if ( ! $component_name ) {
+			return false;
 		}
+
+		// First try to find if we can find component just by name
+		$index = array_get_index_by_value( $components, $component_name );
+
+		// If we can't find name, then check for component
+		if ( $index === false ) {
+			
+			// Check the component name of each component
+			foreach ($components as $_index => $component) {
+
+				if ( isset($component['name']) && $component['name'] == $component_name ) {
+					$index = $_index;
+					break;
+				}
+			}
+		}
+
+		return $index;
 	}
 
 	/**

@@ -56,117 +56,46 @@ function render_attr( $attr ) {
 	return trim( $html );
 }
 
-// function find_array_value( array $array, $lookup_value ) {
-// 	$index = array_search( $lookup_value, $array );
-	
-// 	return false === $index ? 0 : $index;
-// }
+/**
+ * Get the index of a value in an array
+ *
+ * @param $array An array to search
+ * @param $target A value to find
+ *
+ * @return integer or false
+ */
+function array_get_index_by_value( array $array, $target ) {
+	return array_search( $target, $array );
+}
+
+/**
+ * Get the index of a key in an array
+ *
+ * @param $array An array to search
+ * @param $target A key to find
+ *
+ * @return integer or false
+ */
+function array_get_index_by_key( array $array, $target ) {
+	return array_search($target, array_keys($array), true);
+}
 
 /**
  * Inserts a new value before the value in the array.
  *
  * @param $array An array to insert in to.
- * @param $lookup_value The value to insert before.
- * @param $insert_value A value or value-pair to insert.
+ * @param $offset The offset to insert at.
+ * @param $insert A value or value-pair to insert.
  *
  * @return The array with a value inserted
  */
-function array_insert_before_value( array $array, $lookup_value, $insert_value ) {
+function array_insert( array $array, $offset, $insert ) {
 
-	// First make sure insert_value is an array
-	$insert_value = (is_array($insert_value)) ? $insert_value : [$insert_value];
-
-	// Find index
-	$index = array_search( $lookup_value, $array );
-
-	// If not found an index, then set offset to 0
-	$offset = ($index !== false) ? $index : 0;
+	// First make sure insert is an array
+	$insert = (is_array($insert)) ? $insert : [$insert];
 
 	// Return the array with inserted value
-	return array_merge( array_slice( $array, 0, $offset ), $insert_value, array_slice( $array, $offset ) );
-}
-
-/**
- * Inserts a new value after the value in the array.
- *
- * @param $array An array to insert in to.
- * @param $lookup_value The value to insert after.
- * @param $insert_value A value or value-pair to insert.
- *
- * @return The array with a value inserted
- */
-function array_insert_after_value( array $array, $lookup_value, $insert_value ) {
-
-	// First make sure insert_value is an array
-	$insert_value = (is_array($insert_value)) ? $insert_value : [$insert_value];
-
-	// Find index
-	$index = array_search( $lookup_value, $array );
-
-	// Set offset after index or at end
-	$offset = ($index !== false) ? $index + 1 : count( $array );
-
-	// Return the array with inserted value
-	return array_merge( array_slice( $array, 0, $offset ), $insert_value, array_slice( $array, $offset ) );
-}
-
-/**
- * Inserts a new value before a key in the array.
- *
- * @param $array An array to insert in to.
- * @param $key The key to insert before.
- * @param $insert_value A value or value-pair to insert.
- *
- * @return The array with a value inserted
- */
-function array_insert_before_key( array $array, $key, $insert_value ) {
-
-	log($key);
-	log($insert_value);
-
-	// First make sure insert_value is an array
-	$insert_value = (is_array($insert_value)) ? $insert_value : [$insert_value];
-	log($insert_value);
-
-	// Get key index;
-	$index = array_search($key, array_keys($array), true);
-
-	// Set offset as index or at start
-    $offset = ($index !== false) ? $index : 0;
-
-    log( "offset $offset" );
-
-	// Return the array with inserted value
-	$array = array_slice( $array, 0, $offset ) + $insert_value + array_slice( $array, $offset );
-
-    log( $array );
-
-    return $array;
-
-}
-
-/**
- * Inserts a new value after a key in the array.
- *
- * @param $array An array to insert in to.
- * @param $key The key to insert after.
- * @param $insert_value A value or value-pair to insert.
- *
- * @return The array with a value inserted
- */
-function array_insert_after_key( array $array, $key, $insert_value ) {
-
-	// First make sure insert_value is an array
-	$insert_value = (is_array($insert_value)) ? $insert_value : [$insert_value];
-
-	// Get key index
-	$index = array_search($key, array_keys($array), true);
-
-	// Set offset after index or at end
-    $offset = ($index !== false) ? $index + 1 : count( $array );
-
-	// Return the array with inserted value
-	return array_merge( array_slice( $array, 0, $offset ), $insert_value, array_slice( $array, $offset ) );
+	return array_merge( array_slice( $array, 0, $offset ), $insert, array_slice( $array, $offset ) );
 }
 
 function array_remove_value( array $array, $value ) {

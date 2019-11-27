@@ -50,40 +50,13 @@ function render_site() {
 	return \ob_get_clean();
 }
 
-function render_site_branding() {
-
-	ob_start();
-	?>
-
-	<div class="site-branding">
-		<h1 class="site-branding__title">
-			<a class="site-branding__link" href="<?= home_url() ?>" rel="home"><?= get_bloginfo( 'name', 'display' ) ?></a>
-		</h1>
-	</div>
-	
-	<?php
-	return ob_get_clean();
-}
-
-function render_site_title() {
-
-	ob_start();
-	?>
-		<a class="site-branding__link" href="<?= home_url() ?>" rel="home"><?= get_bloginfo( 'name', 'display' ) ?></a>
-		
-	<?php
-	return ob_get_clean();
+function render_site_branding_link() {
+	return '<a class="site-branding__link" href="'. home_url() .'" rel="home">'. get_bloginfo( 'name', 'display' ) .'</a>';
 }
 
 function render_breadcrumbs() {
 
-	ob_start();
-	?>
-
-	Breadcrumbs
-	
-	<?php
-	return ob_get_clean();
+	return 'Breadcrumbs';
 }
 
 
