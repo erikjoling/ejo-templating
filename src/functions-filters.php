@@ -20,34 +20,27 @@ function body_class_filter( $classes, $class ) {
 
 	$classes = [];
 
-	/**
-	 * Templating
-	 */
+	// Template Type
+	$classes[] = 'is-template-type-' . get_template_type();
 
-	// Archives
-	if ( is_plural_page() ) {
-		$classes[] = 'template-archive';
-		$classes[] = 'template-archive--' . get_post_type();
+	// Template
+	$classes[] = 'is-template-' . get_template();
+	
+	// Checks for custom template.
+	$template = str_replace(
+		[ 'template-', 'tmpl-' ],
+		'',
+		basename( get_page_template_slug(), '.php' )
+	);
+
+	if ($template) {
+		$classes[] = "is-template-{$template}";
 	} 
 
-	elseif ( is_singular_page() ) {
-		
-		$classes[] = 'template-singular';
-		$classes[] = 'template-singular--' . get_post_type();
+	/**
+	 * Other
+	 */	
 
-		// Checks for custom template.
-		$template = str_replace(
-			[ 'template-', 'tmpl-' ],
-			'',
-			basename( get_page_template_slug(), '.php' )
-		);
-
-		if ($template) {
-			$classes[] = "template-{$template}";
-		} 
-	}
-
-	// WP admin bar.
 	if ( \is_admin_bar_showing() ) {
 		$classes[] = 'has-admin-bar';
 	}

@@ -306,3 +306,31 @@ function render_posts_nav() {
 
    	return $render;
 }
+
+function render_404_title() {
+
+	if (method_exists('\Ejo\Pack\Page404', 'render_title')) {
+		$render = \Ejo\Pack\Page404::render_title();
+	}
+
+	return $render ?? __('Page not Found', 'theme-erik');
+}
+
+function render_404_content() {
+
+	if (method_exists('\Ejo\Pack\Page404', 'render_content')) {
+		$render = \Ejo\Pack\Page404::render_content();
+	}
+
+	return $render ?? apply_filters( 'the_content', __('Oops', 'theme-erik') );
+}
+
+function render_search_title() {
+
+	return sprintf( esc_html__( 'Search results for: %s', 'ejo-base' ), get_search_query() );
+}
+
+function render_search_content() {
+
+	return '';
+}

@@ -127,7 +127,7 @@ add_action( 'wp', function() {
 	Composition::component_setup( 'page-title', function( $component ) { 
 
 		$component['element'] = [ 'tag' => 'h1', 'bem_element' => 'title' ];
-		$component['content'] = get_page_title();
+		$component['content'] = single_post_title( '', false );
 		
 		return $component;
 	});
@@ -160,7 +160,7 @@ add_action( 'wp', function() {
 
 	Composition::component_setup( 'page-content', function( $component ) {
 		$component['element'] = false;
-		$component['content'] = render_page_content();
+		$component['content'] = apply_filters( 'the_content', get_the_content() );
 		
 		return $component;
 	});
@@ -303,12 +303,10 @@ add_action( 'wp', function() {
 		];
 	});
 
-
-
 	/**
-	 * Template: plural pages
+	 * Template Type: archive
 	 */
-	if (is_plural_page()) {
+	if ( is_template_type('archive') ) {
 
 		Composition::component_setup( 'page', function( $component ) {
 
@@ -319,17 +317,52 @@ add_action( 'wp', function() {
 
 		Composition::component_setup( 'page-main', function( $component ) {
 
-
-			Composition::component_insert_after( $component['content'], 'the-post-loop' );
+			Composition::component_insert_after( $component['content'], 'the-post-loop', 'page-content' );
 
 			return $component;
 		});
 	}
 
 	/**
-	 * Template: Single post
+	 * Template Type: Term
 	 */
-	if ( is_singular_page('post') ) {
+	if ( is_template_type('term') ) {
+		
+		Composition::component_setup( 'page-title', function( $component ) {
+			$component['content'] = single_term_title( '', false );
+
+			return $component;
+		});
+
+		Composition::component_setup( 'page-content', function( $component ) {
+			$component['content'] = apply_filters( 'the_content', get_the_archive_description() );
+
+			return $component;
+		});
+	}
+
+	/**
+	 * Template: blog page
+	 */
+	if ( is_template('blog') ) {
+		
+		Composition::component_setup( 'page-title', function( $component ) {
+			$component['content'] = get_post_field( 'post_title', get_queried_object_id() );
+
+			return $component;
+		});
+
+		Composition::component_setup( 'page-content', function( $component ) {
+			$component['content'] = apply_filters( 'the_content', get_the_content( null, false, get_queried_object_id() ) );
+
+			return $component;
+		});
+	}
+
+	/**
+	 * Template: Post
+	 */
+	if ( is_template('post') ) {
 
 		Composition::component_setup( 'page-header', function( $component ) {
 
@@ -344,6 +377,67 @@ add_action( 'wp', function() {
 
 			return $component;
 		});	
+	}
+
+
+	/**
+	 * Template: 404
+	 */
+	if ( is_template('404') ) {
+
+		Composition::component_setup( 'page-title', function( $component ) {
+			$component['content'] = render_404_title();
+
+			return $component;
+		});
+
+		Composition::component_setup( 'page-content', function( $component ) {
+			$component['content'] = render_404_content();
+
+			return $component;
+		});
+	}
+
+	/**
+	 * Template: Search
+	 */
+	if ( is_template('search') ) {
+
+		Composition::component_setup( 'page-title', function( $component ) {
+			$component['content'] = render_search_title();
+
+			return $component;
+		});
+
+		Composition::component_setup( 'page-content', function( $component ) {
+			$component['content'] = render_search_content();
+
+			return $component;
+		});
+	}
+
+	/**
+	 * Template: Blog no page
+	 */
+	if ( is_template('blog-no-page') ) {
+
+		Composition::component_setup( 'page-title', function( $component ) {
+			$component['content'] = 'Blog of Front';
+
+			return $component;
+		});
+	}
+
+	/**
+	 * Template: Blog on Front
+	 */
+	if ( is_template('author') ) {
+
+		Composition::component_setup( 'page-title', function( $component ) {
+			$component['content'] = get_the_author_meta( 'display_name', absint( get_query_var( 'author' ) ) );
+
+			return $component;
+		});
 	}
 });
 
