@@ -50,6 +50,22 @@ function render_site() {
 	return \ob_get_clean();
 }
 
+function render_site_branding() {
+	$bem_block = Composition::get_parent();
+
+	ob_start();
+
+	?>
+	<div class="<?= $bem_block ?>">
+		<h1 class="<?= $bem_block ?>__title">
+			<a class="<?= $bem_block ?>__link" href="<?= home_url() ?>" rel="home"><?= get_bloginfo( 'name', 'display' ) ?></a>
+		</h1>
+	</div>
+	<?php
+
+	return ob_get_clean();
+}
+
 function render_site_branding_link() {
 	return '<a class="site-branding__link" href="'. home_url() .'" rel="home">'. get_bloginfo( 'name', 'display' ) .'</a>';
 }
@@ -57,23 +73,6 @@ function render_site_branding_link() {
 function render_breadcrumbs() {
 
 	return 'Breadcrumbs';
-}
-
-
-function render_page_title() {
-
-	ob_start();
-	?>
-
-	<h1 class="page-title"><?= get_page_title() ?></h1>
-	
-	<?php
-	return ob_get_clean();
-}
-
-function render_page_content() {
-
-	return get_page_content();
 }
 
 function render_post_loop( $args = null ) {

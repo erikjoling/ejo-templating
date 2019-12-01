@@ -76,9 +76,12 @@ final class Composition {
 	 * @return 	String $render
 	 */
 	public static function render_component( $component ) {
+		log($component);
 		
-		// If component is string then setup empty component with name
-		$component = ( is_string($component) ) ? [ 'name' => $component ] : $component;
+		// If component is array with only one record, then setup empty component with name
+		$component = ( is_array($component) && count($component) == 1 && isset($component[0]) ) ? [ 'name' => $component[0] ] : $component;
+
+		log($component);
 
 		// We don't like empty component names
 		if ( empty($component['name']) ) {
@@ -88,20 +91,11 @@ final class Composition {
 		// Sanitize the name and store it. It should not be changed
 		$name = $component['name'] = esc_html( $component['name'] );
 
-		// Setup component
-		$component_setup = apply_filters( "ejo/composition/component_setup/{$name}", [] );
+		// Setup component data for rendering
+		$component = static::setup_component_settings($name, $component);
 
-		/**
-		 * Sometimes the filter only runs a function without returning a value. In that
-		 * case we set element and content to false. For example: the-post --> the_post();
-		 */
-		$component_setup = $component_setup ?? [ 'element' => false, 'content' => false ];
-
-		// Merge the component with the setup
-		$component = array_replace_recursive($component_setup, $component);
-
-		// Give theme opportunity to overwrite passed component
-		$component = apply_filters( "ejo/composition/component_overwrite/{$name}", $component );
+		// Add action in case we need to do some action in stead of filtering (like the_post())
+		do_action( "ejo/composition/after_setup_component/{$name}", $name );
 
 		// Process component parts
 		$element = $component['element'] ?? [];
@@ -109,6 +103,8 @@ final class Composition {
 
 		// Setup render
 		$render = '';
+
+		log($content);
 		
 		// Only do stuff if $element and $content are not expicitely set as false
 		if ( $element !== false || $content !== false ) {
@@ -139,6 +135,23 @@ final class Composition {
 		}
 
 		return $render;
+	}
+
+	private static function setup_component_settings( $name, $component ) {
+
+		// Setup component defaults
+		$component_defaults = apply_filters( "ejo/composition/component_defaults/{$name}", [] );
+
+		// If component is empty we set it to default false structure
+		if ( empty($component_defaults) ) {
+			$component_defaults = [ 'element' => false, 'content' => false ];
+		}
+
+		// Merge the component with the defaults
+		$component = array_replace_recursive($component_defaults, $component);
+
+		// Give themes and plugins opportunity to override passed component
+		return apply_filters( "ejo/composition/component/{$name}", $component );
 	}
 
 	private static function setup_component_element( $element, $name ) {
@@ -191,9 +204,24 @@ final class Composition {
 		}
 		elseif ( is_array($content) ) {
 		
-			foreach ( $content as $component ) {
+			// If the content part is a callback (string function, or array with class and function)
+			if ( is_string($content[0]) || ( is_array($content[0]) && isset($content[0][1]) ) ) {
 
-				$render .= static::render_component( $component );
+				// First part of content_part is callback, other entries are parameters
+				$callback = array_shift($content);
+				$params   = $content;
+
+				if ( $params) {
+					$render .= call_user_func_array( $callback, $params );
+				}
+				else {
+					$render .= call_user_func( $callback );
+				}
+			}
+			else {
+				foreach ( $content as $content_part ) {
+					$render .= static::render_component( $content_part );
+				}
 			}
 		}
 
@@ -269,6 +297,17 @@ final class Composition {
 		return $classes;
 	}
 
+
+
+	// private static function is_content_component( $content_part ) {
+
+	// 	return (is_string($content_part) || isset($content_part['element']) || isset($content_part['content']));
+	// }
+
+	// private static function is_content_callback( $content_part ) {
+
+	// 	return isset($content_part['callback']);
+	// }
 
 	private static function get_bem_block( $bem_block, $name ) {
 
@@ -491,27 +530,9 @@ final class Composition {
 	 * @param string Name
 	 * @param array Component (element, content)
 	 */
-	public static function component_setup( $name, $component ) {
+	public static function setup_component_defaults( $name, $component ) {
 
-		add_filter( "ejo/composition/component_setup/{$name}", $component, 10, 2 );
-		
-		// Passing an array as closure prevents directly calling a function when
-		// setting up the component. When using a anonymous function it only
-		// gets called when the filter is due
-
-		// // If array then pass the component as a Closure
-		// if ( is_array($component) ) {
-
-		// 	add_filter( "ejo/composition/component/{$name}", function() use ($component) {
-		// 		return $component;
-		// 	});
-		// }
-
-		// // Else, we assume the component is a function
-		// else {
-		// 	add_filter( "ejo/composition/component/{$name}", $component, 10, 2 );
-		// }
-
+		add_filter( "ejo/composition/component_defaults/{$name}", $component, 10, 2 );
 	}
 
 	/**
@@ -522,9 +543,33 @@ final class Composition {
 	 * @param string Name
 	 * @param array Component (element, content)
 	 */
-	public static function component_overwrite( $name, $component ) {
+	public static function setup_component( $name, $component ) {
 
-		add_filter( "ejo/composition/component_overwrite/{$name}", $component, 10, 2 );
+		add_filter( "ejo/composition/component/{$name}", $component, 10, 2 );
+	}
+
+	/**
+	 * Easily hook into action hook
+	 *
+	 * @param string Name
+	 * @param string or function
+	 */
+	public static function after_setup_component( $name, $function ) {
+
+		add_action( "ejo/composition/after_setup_component/{$name}", $function );
+	}
+
+	/**
+	 * Easily remove action
+	 *
+	 * @param string Name
+	 * @param string or function
+	 */
+	public static function after_setup_component_remove( $name, $function ) {
+
+		if ( is_string($function) || is_array($function) ) {
+			remove_action( "ejo/composition/after_setup_component/{$name}", $function );
+		}
 	}
 }
 
