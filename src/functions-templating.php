@@ -51,7 +51,7 @@ function render_site() {
 }
 
 function render_site_branding() {
-	$bem_block = Composition::get_parent();
+	$bem_block = 'site-branding';
 
 	ob_start();
 
@@ -66,13 +66,56 @@ function render_site_branding() {
 	return ob_get_clean();
 }
 
-function render_site_branding_link() {
-	return '<a class="site-branding__link" href="'. home_url() .'" rel="home">'. get_bloginfo( 'name', 'display' ) .'</a>';
+function render_site_link() {
+	return '<a class="'. Composition::get_parent() .'__link" href="'. home_url() .'" rel="home">'. get_bloginfo( 'name', 'display' ) .'</a>';
 }
 
 function render_breadcrumbs() {
 
 	return 'Breadcrumbs';
+}
+
+
+function render_title( $link = false ) {
+	$title = get_the_title();
+	
+	if ($link) {
+		$title = '<a href="'. get_the_permalink() .'">'. $title .'</a>';
+	}
+
+	return $title;
+}
+
+function wrap_in_link( $callback ) {
+
+	$render = '';
+
+	$callback_render = render_callback($callback);
+	$url             = get_the_permalink();
+
+	// Wrap callback-render in a link
+	if ($url && $callback_render) {
+		$render = '<a href="'. $url .'">'. $callback_render .'</a>';
+	}
+
+	return $render;
+}
+
+function render_read_more() {
+
+	return '<a class="'. Composition::get_parent() .'__read-more" href="'. get_the_permalink() .'">'. __('Read more', 'ejo-base') .'</a>';
+}
+
+function render_excerpt() {
+	ob_start();
+	the_excerpt();
+	return ob_get_clean();
+}
+
+function render_content() {
+	ob_start();
+	the_content();
+	return ob_get_clean();
 }
 
 function render_post_loop( $args = null ) {
@@ -108,16 +151,6 @@ function render_plural_post_title() {
 
 	?>
 	<a href="<?php the_permalink() ?>" class=""><?php the_title(); ?></a>
-	<?php
-
-	return ob_get_clean();
-}
-
-function render_plural_post_content() {
-	ob_start();
-
-	?>
-	<?php the_excerpt(); ?>
 	<?php
 
 	return ob_get_clean();
@@ -332,4 +365,8 @@ function render_search_title() {
 function render_search_content() {
 
 	return '';
+}
+
+function render_recent_posts_title() {
+	return '<h2 class="'. Composition::get_parent() .'__title">Recente berichten</h2>';
 }

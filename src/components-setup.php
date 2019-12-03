@@ -68,133 +68,112 @@ add_action( 'wp', function() {
 	/**
 	 * Site and Page stuff
 	 */
-	// Composition::setup_component_defaults( 'site', function( $component ) { 
-	// 	$component['element'] = [ 'tag' => 'div', 'inner_wrap' => true ];
-	// 	$component['content'] = [ 
-	// 		['name' => 'site-header-2', 'element' => [], 'content' => [['name' => 'site-footer', 'callback' => [__NAMESPACE__ . '\\render_site_info' ]]] ],
-	// 		'site-main-2',
-	// 		// ['name' => 'site-footer-2', 'callback' => __NAMESPACE__ . '\\render_site_info' ],
-	// 		['name' => 'site-footer-3', 'callback' => ['get_the_title', 2]],
-	// 	]; 
-
-	// 	return $component;
-	// });
-
-	// Composition::setup_component_defaults( 'title', function( $component ) { 
-	// 	$component['element'] = [ 'tag' => 'h1' ];
-	// 	$component['content'] = ['get_the_title', null]; 
-
-	// 	return $component;
-	// });
-
-	// Composition::setup_component_defaults( 'page-title', function( $component ) { 
-	// 	$component['element'] = [ 'tag' => 'h1' ];
-	// 	$component['content'] = ['get_the_title', null]; 
-
-	// 	return $component;
-	// });
-
-
 	Composition::setup_component_defaults( 'site', function( $component ) { 
-		$component['element'] = [ 'tag' => 'div', 'inner_wrap' => true ];
-		$component['content'] = [ ['site-header'] ]; 
-
-		return $component;
+		return [
+			'container' => [ 'tag' => 'div', 'inner_wrap' => true ],
+			'content' => [ ['site-header'], ['site-main'], ['site-footer'] ]
+		];
 	});
 
 	Composition::setup_component_defaults( 'site-header', function( $component ) { 
-		$component['element'] = [ 'tag' => 'header', 'inner_wrap' => true, 'force_display' => true ];
-		$component['content'] = [ ['site-branding'] ];
-		
-		return $component;
+		return [
+			'container' => [ 'tag' => 'header', 'inner_wrap' => true, 'force_display' => true ],
+			'content' => [ ['site-branding'], ['site-nav-toggle'], ['site-nav'] ]
+		];
 	});
 
 	Composition::setup_component_defaults( 'site-main', function( $component ) { 
-		$component['element'] = [ 'tag' => 'main', 'inner_wrap' => true, 'force_display' => true ];
-		$component['content'] = [ 'page' ];
-		
-		return $component;
+		return [
+			'container' => [ 'tag' => 'main', 'inner_wrap' => true, 'force_display' => true ],
+			'content' => [ ['page'] ]
+		];
 	});
 
 	Composition::setup_component_defaults( 'site-footer', function( $component ) { 
-		$component['element'] = [ 'tag' => 'footer', 'inner_wrap' => true, 'force_display' => true ];
-		$component['content'] = [];
-		
-		return $component;
+		return [
+			'container' => [ 'tag' => 'footer', 'inner_wrap' => true, 'force_display' => true ],
+		];
 	});
 
 	Composition::setup_component_defaults( 'page', function( $component ) { 
-		$component['element'] = [ 'tag' => 'article', 'inner_wrap' => true, 'force_display' => true ];
-		$component['content'] = [ 'page-header', 'page-main', 'page-footer' ];
-		
-		return $component;
+		return [
+			'container' => [ 'tag' => 'article', 'inner_wrap' => true, 'force_display' => true ],
+			'content' => [ ['page-header'], ['page-main'], ['page-footer'] ]
+		];
 	});
 
 	Composition::setup_component_defaults( 'page-header', function( $component ) { 
-		$component['element'] = [ 'tag' => 'header', 'inner_wrap' => true, 'force_display' => true ];
-		$component['content'] = [ 'breadcrumbs', 'page-title' ];
-		
-		return $component;
+		return [
+			'container' => [ 'tag' => 'header', 'inner_wrap' => true, 'force_display' => true ],
+			'content' => [ ['breadcrumbs'], ['page-title'] ]
+		];
 	});
 
 	Composition::setup_component_defaults( 'page-main', function( $component ) { 
-		$component['element'] = [ 'tag' => 'div', 'inner_wrap' => true, 'force_display' => true ];
-		$component['content'] = [ 'page-content' ];
-		
-		return $component;
+		return [
+			'container' => [ 'tag' => 'div', 'inner_wrap' => true, 'force_display' => true ],
+			'content' => [ ['content'] ]
+		];
 	});
 
 	Composition::setup_component_defaults( 'page-footer', function( $component ) { 
-		$component['element'] = [ 'tag' => 'footer', 'inner_wrap' => true ];
-		
-		return $component;
+		return [
+			'container' => [ 'tag' => 'footer', 'inner_wrap' => true ],
+		];
 	});
 
 	Composition::setup_component_defaults( 'page-title', function( $component ) { 
+		return [
+			'container' => [ 'tag' => 'h1', 'bem_element' => 'title' ],
+			'content' => [ '\\single_post_title', '', false ]
+		];
+	});
 
-		$component['element'] = [ 'tag' => 'h1', 'bem_element' => 'title' ];
-		$component['content'] = single_post_title( '', false );
-		// $component['content'] = [ 'fn:single_post_title' => ['', false] ];
-		
+	Composition::setup_component_defaults( 'title', function( $component ) { 
+
+		$component['container'] = [ 'tag' => 'h1', 'bem_element' => 'title' ];
+		$component['content'] = [ '\\get_the_title' ];
+
+		if( Composition::get_parent() == 'plural-post' ) {
+			$component['container']['tag'] = 'h2';
+			$component['content'] = [ __NAMESPACE__ . '\\wrap_in_link', $component['content'] ];
+		}
+
 		return $component;
 	});
 
+
 	Composition::setup_component_defaults( 'site-branding', function( $component ) {
-		$component['element'] = false;
-		$component['content'] = [ __NAMESPACE__ . '\\render_site_branding' ];
-		
-		return $component;
+		return [
+			'content' => [ __NAMESPACE__ . '\\render_site_branding' ]
+		];
 	});
 
 	Composition::setup_component_defaults( 'site-nav-toggle', function( $component ) {
-		$component['element'] = false;
-		$component['content'] = render_site_nav_toggle();
-		
-		return $component;
+		return [
+			'content' => [ __NAMESPACE__ . '\\render_site_nav_toggle' ]
+		];
 	});
 
 	Composition::setup_component_defaults( 'site-nav', function( $component ) { 
-		$component['element'] = false;
-		$component['content'] = render_site_nav();
-		
-		return $component;
+		return [
+			'content' => [ __NAMESPACE__ . '\\render_site_nav' ]
+		];
 	});
 
-	Composition::setup_component_defaults( 'page-content', function( $component ) {
-		$component['element'] = false;
-		$component['content'] = apply_filters( 'the_content', get_the_content() );
-		
-		return $component;
+	Composition::setup_component_defaults( 'content', function( $component ) {
+		return [
+			'content' => [ __NAMESPACE__ . '\\render_content' ]
+		];
 	});
 
 	Composition::setup_component_defaults( 'breadcrumbs', function( $component ) { 
-		$component['element'] = false;
-		$component['callback'] = [ __NAMESPACE__ . '\\render_breadcrumbs' ];
-		
-		return $component;
+		return [
+			'content' => [ __NAMESPACE__ . '\\render_breadcrumbs' ]
+		];
 	});
 
-	// Composition::setup_component_defaults( 'the-post', '__return_false' );
+	// Before render component...
 	Composition::after_setup_component( 'page', '\\the_post' );
 
 	/**
@@ -202,57 +181,62 @@ add_action( 'wp', function() {
 	 */
 
 	Composition::setup_component_defaults( 'the-post-loop', function( $component ) {
-		$component['element'] = false;
-		$component['content'] = render_post_loop();
-		
-		return $component;
+		return [
+			'content' => [ __NAMESPACE__ . '\\render_post_loop' ]
+		];
 	});
 
 	Composition::setup_component_defaults( 'plural-post', function( $component ) { 
 		return [
-			'element' => [ 'tag' => 'article' ],
-			'content' => [ 'plural-post-header', 'plural-post-main', 'plural-post-footer' ]
+			'container' => [ 'tag' => 'article' ],
+			'content' => [ ['plural-post-header'], ['plural-post-main'], ['plural-post-footer'] ]
 		]; 
 	});
 
 	Composition::setup_component_defaults( 'plural-post-header', function( $component ) { 
 		return [
-			'element' => [ 'tag' => 'header', 'bem_block' => false, 'bem_element' => 'header' ],
-			'content' => [ 'plural-post-title', 'post-meta' ]
+			'container' => [ 'tag' => 'header', 'bem_block' => false, 'bem_element' => 'header' ],
+			'content' => [ ['title'], ['post-meta'] ]
 		]; 
 	});
 
 	Composition::setup_component_defaults( 'plural-post-title', function( $component ) { 
 		return [
-			'element' => [ 'tag' => 'h3', 'bem_block' => false, 'bem_element' => 'title' ],
-			'content' => '<a href="'. get_the_permalink() .'">'. get_the_title() .'</a>'
+			'container' => [ 'tag' => 'h3', 'bem_block' => false, 'bem_element' => 'title' ],
+			'content' => [ __NAMESPACE__ . '\\render_title', true ]
 		]; 
 	});
 
 	Composition::setup_component_defaults( 'plural-post-main', function( $component ) { 
 		return [
-			'element' => [ 'tag' => 'div', 'bem_block' => false, 'bem_element' => 'main' ],
-			'content' => render_plural_post_content() 
+			'container' => [ 'tag' => 'div', 'bem_block' => false, 'bem_element' => 'main' ],
+			'content' => [ ['excerpt'] ]
 		]; 
 	});
 
 	Composition::setup_component_defaults( 'plural-post-footer', function( $component ) { 
 		return [
-			'element' => [ 'tag' => 'footer', 'bem_block' => false, 'bem_element' => 'footer' ],
-			'content' => [ 'plural-post-read-more' ]
+			'container' => [ 'tag' => 'footer', 'bem_block' => false, 'bem_element' => 'footer' ],
+			'content' => [ ['read-more'] ]
 		]; 
 	});
 
-	Composition::setup_component_defaults( 'plural-post-read-more', function( $component ) { 
+	Composition::setup_component_defaults( 'excerpt', function( $component ) { 
 		return [
-			'content' => '<a href="'. get_the_permalink() .'" class="'. Composition::get_parent() .'__read-more">'. __('Read more', 'ejo-base') .'</a>'
+			'content' => [ __NAMESPACE__ . '\\render_excerpt' ]
+		]; 
+	});
+
+	Composition::setup_component_defaults( 'read-more', function( $component ) { 
+		return [
+			'content' => [ __NAMESPACE__ . '\\render_read_more' ]
 		]; 
 	});
 
 	Composition::setup_component_defaults( 'post-meta', function( $component ) {
 		return [
-			'element' => [ 'tag' => 'div' ],
-			'content' => [ 'post-author', 'post-date', 'post-categories' ]
+			'container' => [],
+			'content' => [ ['post-author'], ['post-date'], ['post-categories'] ]
 		]; 
 	});
 
@@ -260,8 +244,8 @@ add_action( 'wp', function() {
 		$bem_element = (Composition::get_parent() == 'post-meta') ? 'author' : true;
 
 		return [
-			'element' => [ 'tag' => 'div', 'bem_block' => false, 'bem_element' => $bem_element ],
-			'content' => render_post_author()
+			'container' => [ 'tag' => 'div', 'bem_block' => false, 'bem_element' => $bem_element ],
+			'content' => [ __NAMESPACE__ . '\\render_post_author' ]
 		]; 
 	});
 
@@ -269,8 +253,8 @@ add_action( 'wp', function() {
 		$bem_element = (Composition::get_parent() == 'post-meta') ? 'date' : true;
 
 		return [
-			'element' => [ 'tag' => 'div', 'bem_block' => false, 'bem_element' => $bem_element ],
-			'content' => render_post_date()
+			'container' => [ 'tag' => 'div', 'bem_block' => false, 'bem_element' => $bem_element ],
+			'content' => [ __NAMESPACE__ . '\\render_post_date' ]
 		]; 
 	});
 
@@ -278,51 +262,51 @@ add_action( 'wp', function() {
 		$bem_element = (Composition::get_parent() == 'post-meta') ? 'categories' : true;
 
 		return [
-			'element' => [ 'tag' => 'div', 'bem_block' => false, 'bem_element' => $bem_element ],
-			'content' => render_post_categories()
+			'container' => [ 'tag' => 'div', 'bem_block' => false, 'bem_element' => $bem_element ],
+			'content' => [ __NAMESPACE__ . '\\render_post_categories' ]
 		]; 
 	});
 
 	Composition::setup_component_defaults( 'post-nav', function( $component ) { 
 		return [
-			'element' => [ 'tag' => 'nav', 'inner_wrap' => true ],
-			'content' => [ 'post-nav-link-previous', 'post-nav-link-next' ]
+			'container' => [ 'tag' => 'nav', 'inner_wrap' => true ],
+			'content' => [ ['post-nav-link-previous'], ['post-nav-link-next'] ]
 		];
 	});
 
 	Composition::setup_component_defaults( 'post-nav-link-previous', function( $component ) { 
 		return [
-			'content' => render_post_nav_link('previous')
+			'content' => [ __NAMESPACE__ . '\\render_post_nav_link', 'previous' ]
 		];
 	});
 
 	Composition::setup_component_defaults( 'post-nav-link-next', function( $component ) { 
 		return [
-			'content' => render_post_nav_link('next')
+			'content' => [ __NAMESPACE__ . '\\render_post_nav_link', 'next' ]
 		];
 	});
 
 	Composition::setup_component_defaults( 'recent-posts', function( $component ) {
 
 		return [
-			'element' => [ 'tag' => 'section' ],
-			'content' => [ 'recent-posts-header', 'recent-posts-main' ]
+			'container' => [ 'tag' => 'section' ],
+			'content' => [ ['recent-posts-header'], ['recent-posts-main'] ]
 		];
 	});
 
 	Composition::setup_component_defaults( 'recent-posts-header', function( $component ) {
 
 		return [
-			'element' => [ 'tag' => 'header', 'bem_block' => false, 'bem_element' => 'header' ],
-			'content' => '<h2 class="'. Composition::get_parent() .'__title">Recente berichten</h2>'
+			'container' => [ 'tag' => 'header', 'bem_block' => false, 'bem_element' => 'header' ],
+			'content' => [ __NAMESPACE__ . '\\render_recent_posts_title' ]
 		];
 	});
 
 	Composition::setup_component_defaults( 'recent-posts-main', function( $component ) {
 
 		return [
-			'element' => [ 'tag' => 'div', 'bem_block' => false, 'bem_element' => 'main' ],
-			'content' => render_post_loop( 'posts_per_page=3' )
+			'container' => [ 'tag' => 'div', 'bem_block' => false, 'bem_element' => 'main' ],
+			'content' => [ __NAMESPACE__ . '\\render_post_loop', 'posts_per_page=3' ]
 		];
 	});
 
@@ -331,41 +315,43 @@ add_action( 'wp', function() {
 	 */
 	if ( is_template_type('archive') ) {
 
+		Composition::after_setup_component_remove( 'page', '\\the_post' );
+
+		log('archive');
+
 		Composition::setup_component_defaults( 'page', function( $component ) {
 
-			// Composition::component_remove( $component['content'], 'the-post' );
-			Composition::after_setup_component_remove( 'page', '\\the_post' );
-
-			// global $wp_filters;
-			// log($wp_filters);
+			log($component);
 
 			return $component;
 		});
 
-		// Composition::setup_component_defaults( 'page-main', function( $component ) {
+		Composition::setup_component_defaults( 'page-main', function( $component ) {
 
-		// 	Composition::component_insert_after( $component['content'], 'the-post-loop', 'page-content' );
+			// Composition::component_insert_after( $component['content'], 'the-post-loop', 'page-content' );
 
-		// 	return $component;
-		// });
+			log($component);
+
+			return $component;
+		});
 	}
 
 	/**
 	 * Template Type: Term
 	 */
 	if ( is_template_type('term') ) {
-		
+
 		Composition::setup_component_defaults( 'page-title', function( $component ) {
-			$component['content'] = single_term_title( '', false );
+			$component['content'] = [ '\\single_term_title', '', false ];
 
 			return $component;
 		});
 
-		Composition::setup_component_defaults( 'page-content', function( $component ) {
-			$component['content'] = apply_filters( 'the_content', get_the_archive_description() );
+		// Composition::setup_component_defaults( 'page-content', function( $component ) {
+		// 	$component['content'] = [ '\\the_archive_description' ];
 
-			return $component;
-		});
+		// 	return $component;
+		// });
 	}
 
 	/**
@@ -374,16 +360,16 @@ add_action( 'wp', function() {
 	if ( is_template('blog') ) {
 		
 		Composition::setup_component_defaults( 'page-title', function( $component ) {
-			$component['content'] = get_post_field( 'post_title', get_queried_object_id() );
+			$component['content'] = [ '\\get_post_field', 'post_title', get_queried_object_id() ];
 
 			return $component;
 		});
 
-		Composition::setup_component_defaults( 'page-content', function( $component ) {
-			$component['content'] = apply_filters( 'the_content', get_the_content( null, false, get_queried_object_id() ) );
+		// Composition::setup_component_defaults( 'page-content', function( $component ) {
+		// 	// $component['content'] = apply_filters( 'the_content', get_the_content( null, false, get_queried_object_id() ) );
 
-			return $component;
-		});
+		// 	return $component;
+		// });
 	}
 
 	/**
@@ -413,13 +399,13 @@ add_action( 'wp', function() {
 	if ( is_template('404') ) {
 
 		Composition::setup_component_defaults( 'page-title', function( $component ) {
-			$component['content'] = render_404_title();
+			$component['content'] = [ __NAMESPACE__ . '\\render_404_title' ];
 
 			return $component;
 		});
 
 		Composition::setup_component_defaults( 'page-content', function( $component ) {
-			$component['content'] = render_404_content();
+			$component['content'] = [ __NAMESPACE__ . '\\render_404_content' ];
 
 			return $component;
 		});
@@ -431,13 +417,13 @@ add_action( 'wp', function() {
 	if ( is_template('search') ) {
 
 		Composition::setup_component_defaults( 'page-title', function( $component ) {
-			$component['content'] = render_search_title();
+			$component['content'] = [ __NAMESPACE__ . '\\render_search_title' ];
 
 			return $component;
 		});
 
 		Composition::setup_component_defaults( 'page-content', function( $component ) {
-			$component['content'] = render_search_content();
+			$component['content'] = [ __NAMESPACE__ . '\\render_search_content' ];
 
 			return $component;
 		});
@@ -461,7 +447,7 @@ add_action( 'wp', function() {
 	if ( is_template('author') ) {
 
 		Composition::setup_component_defaults( 'page-title', function( $component ) {
-			$component['content'] = get_the_author_meta( 'display_name', absint( get_query_var( 'author' ) ) );
+			$component['content'] = [ '\\get_the_author_meta', 'display_name', absint( get_query_var( 'author' ) ) ];
 
 			return $component;
 		});

@@ -106,3 +106,32 @@ function array_remove_value( array $array, $value ) {
 
 	return $array;
 }
+
+/**
+ * Render the callback
+ *
+ * @param Array with callback function in which the first entry is a
+ * 		  callback (string, array) and the other entries are .. arguments
+ * 
+ * @return string Render
+ */
+function render_callback( $callback ) {
+
+	$render = '';
+
+	// Make sure callback is an array, because things more consistent.
+	$callback = ( is_string($callback) ) ? [ $callback ] : $callback;
+
+	// First part of callback is the callback functions, other entries are parameters
+	$callback = array_shift($callback);
+	$params   = $callback;
+
+	if ( $params) {
+		$render .= call_user_func_array( $callback, $params );
+	}
+	else {
+		$render .= call_user_func( $callback );
+	}
+
+	return $render;
+}
