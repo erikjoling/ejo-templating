@@ -70,73 +70,95 @@ add_action( 'wp', function() {
 	 */
 	Composition::setup_component_defaults( 'site', function( $component ) { 
 		return [
-			'container' => [ 'tag' => 'div', 'inner_wrap' => true ],
+			'container' => [ 'tag' => 'div', 'force_display' => true  ],
 			'content' => [ ['site-header'], ['site-main'], ['site-footer'] ]
 		];
 	});
 
 	Composition::setup_component_defaults( 'site-header', function( $component ) { 
 		return [
-			'container' => [ 'tag' => 'header', 'inner_wrap' => true, 'force_display' => true ],
+			'container' => [ 'tag' => 'header', 'force_display' => true ],
 			'content' => [ ['site-branding'], ['site-nav-toggle'], ['site-nav'] ]
 		];
 	});
 
 	Composition::setup_component_defaults( 'site-main', function( $component ) { 
 		return [
-			'container' => [ 'tag' => 'main', 'inner_wrap' => true, 'force_display' => true ],
+			'container' => [ 'tag' => 'main', 'force_display' => true ],
 			'content' => [ ['page'] ]
 		];
 	});
 
 	Composition::setup_component_defaults( 'site-footer', function( $component ) { 
 		return [
-			'container' => [ 'tag' => 'footer', 'inner_wrap' => true, 'force_display' => true ],
+			'container' => [ 'tag' => 'footer', 'force_display' => true ],
 		];
 	});
 
 	Composition::setup_component_defaults( 'page', function( $component ) { 
 		return [
-			'container' => [ 'tag' => 'article', 'inner_wrap' => true, 'force_display' => true ],
+			'container' => [ 'tag' => 'article', 'force_display' => true ],
 			'content' => [ ['page-header'], ['page-main'], ['page-footer'] ]
 		];
 	});
 
 	Composition::setup_component_defaults( 'page-header', function( $component ) { 
 		return [
-			'container' => [ 'tag' => 'header', 'inner_wrap' => true, 'force_display' => true ],
+			'container' => [ 'tag' => 'header', 'force_display' => true ],
 			'content' => [ ['breadcrumbs'], ['page-title'] ]
 		];
 	});
 
 	Composition::setup_component_defaults( 'page-main', function( $component ) { 
 		return [
-			'container' => [ 'tag' => 'div', 'inner_wrap' => true, 'force_display' => true ],
-			'content' => [ ['content'] ]
+			'container' => [ 'tag' => 'div', 'force_display' => true ],
+			'content' => [ ['page-title'], ['content'] ]
 		];
 	});
 
 	Composition::setup_component_defaults( 'page-footer', function( $component ) { 
 		return [
-			'container' => [ 'tag' => 'footer', 'inner_wrap' => true ],
+			'container' => [ 'tag' => 'footer' ],
 		];
 	});
 
-	Composition::setup_component_defaults( 'page-title', function( $component ) { 
-		return [
-			'container' => [ 'tag' => 'h1', 'bem_element' => 'title' ],
-			'content' => [ '\\single_post_title', '', false ]
-		];
-	});
 
-	Composition::setup_component_defaults( 'title', function( $component ) { 
+	Composition::setup_component_defaults( 'page-title', function( $component ) {
 
-		$component['container'] = [ 'tag' => 'h1', 'bem_element' => 'title' ];
+		/**
+		 * Conditional logic heeft als nadeel dat het overruled wordt als een theme
+		 * ook ga filteren. Maar het thema kan ook conditionals gebruiken natuurlijk!
+		 */
+
+		$component['container'] = [ 'tag' => 'h2', 'bem_block' => 'title', 'bem_element' => true ];
 		$component['content'] = [ '\\get_the_title' ];
 
-		if( Composition::get_parent() == 'plural-post' ) {
-			$component['container']['tag'] = 'h2';
-			$component['content'] = [ __NAMESPACE__ . '\\wrap_in_link', $component['content'] ];
+		if( Composition::has_parent('page-header') ) {
+			$component['container']['tag'] = 'h1';
+		}
+
+		/**
+		 * Ik ben geneigd om te zeggen dat een component niet op de hoogte mag zijn van het template
+		 * Dus onderstaande code is niet conform de afspraken!
+		 */
+
+		if ( is_template_type('term') ) {
+			$component['content'] = [ '\\single_term_title', '', false ];
+		}
+		elseif ( is_template('blog') ) {
+			$component['content'] = [ '\\get_post_field', 'post_title', get_queried_object_id() ];
+		}
+		elseif ( is_template('404') ) {
+			$component['content'] = [ __NAMESPACE__ . '\\render_404_title' ];
+		}
+		elseif ( is_template('search') ) {
+			$component['content'] = [ __NAMESPACE__ . '\\render_search_title' ];
+		}
+		elseif ( is_template('blog-no-page') ) {
+			$component['content'] = 'Blog of Front';
+		}
+		elseif ( is_template('author') ) {
+			$component['content'] = [ '\\get_the_author_meta', 'display_name', absint( get_query_var( 'author' ) ) ];
 		}
 
 		return $component;
@@ -145,6 +167,7 @@ add_action( 'wp', function() {
 
 	Composition::setup_component_defaults( 'site-branding', function( $component ) {
 		return [
+			'container' => false,
 			'content' => [ __NAMESPACE__ . '\\render_site_branding' ]
 		];
 	});
@@ -174,7 +197,7 @@ add_action( 'wp', function() {
 	});
 
 	// Before render component...
-	Composition::after_setup_component( 'page', '\\the_post' );
+	Composition::before_render_component( 'page', '\\the_post' );
 
 	/**
 	 * Post stuff
@@ -269,7 +292,7 @@ add_action( 'wp', function() {
 
 	Composition::setup_component_defaults( 'post-nav', function( $component ) { 
 		return [
-			'container' => [ 'tag' => 'nav', 'inner_wrap' => true ],
+			'container' => [ 'tag' => 'nav' ],
 			'content' => [ ['post-nav-link-previous'], ['post-nav-link-next'] ]
 		];
 	});
@@ -315,13 +338,9 @@ add_action( 'wp', function() {
 	 */
 	if ( is_template_type('archive') ) {
 
-		Composition::after_setup_component_remove( 'page', '\\the_post' );
-
-		log('archive');
+		Composition::before_render_component_remove_action( 'page', '\\the_post' );
 
 		Composition::setup_component_defaults( 'page', function( $component ) {
-
-			log($component);
 
 			return $component;
 		});
@@ -329,8 +348,6 @@ add_action( 'wp', function() {
 		Composition::setup_component_defaults( 'page-main', function( $component ) {
 
 			// Composition::component_insert_after( $component['content'], 'the-post-loop', 'page-content' );
-
-			log($component);
 
 			return $component;
 		});
@@ -359,11 +376,11 @@ add_action( 'wp', function() {
 	 */
 	if ( is_template('blog') ) {
 		
-		Composition::setup_component_defaults( 'page-title', function( $component ) {
-			$component['content'] = [ '\\get_post_field', 'post_title', get_queried_object_id() ];
+		// Composition::setup_component_defaults( 'page-title', function( $component ) {
+		// 	$component['content'] = [ '\\get_post_field', 'post_title', get_queried_object_id() ];
 
-			return $component;
-		});
+		// 	return $component;
+		// });
 
 		// Composition::setup_component_defaults( 'page-content', function( $component ) {
 		// 	// $component['content'] = apply_filters( 'the_content', get_the_content( null, false, get_queried_object_id() ) );
@@ -398,11 +415,11 @@ add_action( 'wp', function() {
 	 */
 	if ( is_template('404') ) {
 
-		Composition::setup_component_defaults( 'page-title', function( $component ) {
-			$component['content'] = [ __NAMESPACE__ . '\\render_404_title' ];
+		// Composition::setup_component_defaults( 'page-title', function( $component ) {
+		// 	$component['content'] = [ __NAMESPACE__ . '\\render_404_title' ];
 
-			return $component;
-		});
+		// 	return $component;
+		// });
 
 		Composition::setup_component_defaults( 'page-content', function( $component ) {
 			$component['content'] = [ __NAMESPACE__ . '\\render_404_content' ];
@@ -416,11 +433,11 @@ add_action( 'wp', function() {
 	 */
 	if ( is_template('search') ) {
 
-		Composition::setup_component_defaults( 'page-title', function( $component ) {
-			$component['content'] = [ __NAMESPACE__ . '\\render_search_title' ];
+		// Composition::setup_component_defaults( 'page-title', function( $component ) {
+		// 	$component['content'] = [ __NAMESPACE__ . '\\render_search_title' ];
 
-			return $component;
-		});
+		// 	return $component;
+		// });
 
 		Composition::setup_component_defaults( 'page-content', function( $component ) {
 			$component['content'] = [ __NAMESPACE__ . '\\render_search_content' ];
@@ -434,11 +451,11 @@ add_action( 'wp', function() {
 	 */
 	if ( is_template('blog-no-page') ) {
 
-		Composition::setup_component_defaults( 'page-title', function( $component ) {
-			$component['content'] = 'Blog of Front';
+		// Composition::setup_component_defaults( 'page-title', function( $component ) {
+		// 	$component['content'] = 'Blog of Front';
 
-			return $component;
-		});
+		// 	return $component;
+		// });
 	}
 
 	/**

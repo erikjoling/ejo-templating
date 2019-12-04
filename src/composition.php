@@ -70,7 +70,13 @@ final class Composition {
 	public static function render_component( $component ) {
 
 		$component = static::setup_component_data($component);
-		$render    = static::setup_component_render($component);
+
+		// Add action in case we need to do some action in stead of filtering (like the_post())
+		do_action( "ejo/composition/before_render_component/{$component['name']}" );
+
+		// log($component);
+
+		$render = static::setup_component_render($component);
 
 		return $render;
 
@@ -93,22 +99,24 @@ final class Composition {
 			return '';
 		}
 
-		/* ========================= */
-		/* Defaults and overriding
-		/* ========================= */
-
 		// The name is untouchable
 		$name = esc_html($component['name']);
 
 		// Setup component defaults
-		$component_defaults = apply_filters( "ejo/composition/setup_component_defaults/{$name}", [] );
+		$component_defaults = apply_filters( "ejo/composition/setup_component_defaults/{$name}", [
+			'name'      => $name,
+			'container' => [],
+			'content'	=> [],
+		] );
 
 		// Make sure filtered component is how we like it
-		$component_defaults[
+		$component_defaults = [
 			'name'      => $name,
-			'container' => $component_defaults['container'] ?? false,
+			'container' => $component_defaults['container'] ?? [],
 			'content'	=> $component_defaults['content'] ?? [],
 		];
+
+		// log($component_defaults);
 
 		// Merge the component with the defaults
 		$component = array_replace_recursive($component_defaults, $component);
@@ -117,14 +125,16 @@ final class Composition {
 		$component = apply_filters( "ejo/composition/setup_component/{$name}", $component );
 
 		// Make sure filtered component is how we like it
-		$component[
+		$component = [
 			'name'      => $name,
-			'container' => $component['container'] ?? false,
+			'container' => $component['container'] ?? [],
 			'content'	=> $component['content'] ?? [],
 		];
 
-		// Setup container
-		if ( is_array($component['container']) ) {
+		if ( is_array($component['container']) || $component['container'] === true ) {
+
+			// Convert true containers to empty array
+			$component['container'] = ( ! is_array($component['container']) ) ? [] : $component['container'];
 
 			// Merge/replace defaults with the component
 			$component['container'] = wp_parse_args( $component['container'], [
@@ -137,13 +147,12 @@ final class Composition {
 				'bem_element'   => false,
 			] );
 
-
 			// Process
 
-			// Set bem_block to false if element is specified as bem_element and bem_block is not a string
-			if ( $component['container']['bem_element'] && !is_string($component['container']['bem_block']) ) {
-				$component['container']['bem_block'] =  false;
-			}
+			// // Set bem_block to false if element is specified as bem_element and bem_block is not a string
+			// if ( $component['container']['bem_element'] && !is_string($component['container']['bem_block']) ) {
+			// 	$component['container']['bem_block'] =  false;
+			// }
 
 			// Others
 			$component['container']['tag']           = esc_html( $component['container']['tag'] );
@@ -171,12 +180,13 @@ final class Composition {
 		// Setup render
 		$render = '';
 
-		// Only render when it makes sense
-		if ( $component['container'] && ( $component['content'] || $component['container']['force_display'] ) ) {
+		$container     = $component['container'];
+		$force_display = $container['force_display'] ?? false;
+		$content       = $component['content'];
 
-			// Add action in case we need to do some action in stead of filtering (like the_post())
-			do_action( "ejo/composition/component_before_render/{$component['name']}" );	
-	
+		// Only render when it makes sense
+		if ( $content || $force_display ) {
+
 			// Add parent			
 			static::add_parent($component);
 
@@ -185,20 +195,23 @@ final class Composition {
 			 * And the content could be an array, in which case we assume
 			 * it holds one or more components or a callback
 			 */
-			if ( is_string($component['content']) ) {
-				$render .= $component['content'];
+			if ( ! $content ) {
+				// Do nothing...
 			}
-			elseif ( is_array($component['content']) ) {
+			elseif ( is_string($content) ) {
+				$render .= $content;
+			}
+			elseif ( is_array($content) ) {
 
 				// If the content part is a callback (string function, or array with class and function)
-				if ( is_string($component['content'][0]) || ( is_array($component['content'][0]) && isset($component['content'][0][1]) ) ) {
+				if ( is_string($content[0]) || ( is_array($content[0]) && isset($content[0][1]) ) ) {
 
-					$render .= render_callback($component['content']);
+					$render .= render_callback($content);
 				}
 
 				// Render the inner components
 				else {					
-					foreach ( $component['content'] as $inner_component ) {
+					foreach ( $content as $inner_component ) {
 						$render .= static::render_component( $inner_component );
 					}
 				}
@@ -208,10 +221,10 @@ final class Composition {
 			static::remove_parent($component);
 
 			// If we have a render or display is forced, wrap container around render
-			if ( $render || $component['container']['force_display'] ) {
+			if ( ( $container && $render ) || $force_display ) {
 
 				// First render the inner wrap around the render
-				if ( $component['container']['inner_wrap']	) {
+				if ( $container['inner_wrap']	) {
 
 					$bem_block = static::get_bem_block( $component );
 
@@ -223,9 +236,9 @@ final class Composition {
 				}
 
 				$classes    = render_classes( static::get_classes($component) );
-				$attributes = render_attr( $component['container']['attr'] );
+				$attributes = render_attr( $container['attr'] );
 				$attributes = ($attributes) ? " $attributes" : '';
-				$tag 		= $component['container']['tag'];
+				$tag 		= $container['tag'];
 
 				// Setup render format
 				$render = sprintf( '<%1$s class="%2$s"%3$s>%4$s</%1$s>', $tag, $classes, $attributes, $render );
@@ -297,14 +310,14 @@ final class Composition {
 		// Only do stuff with BEM element if it has a BEM block parent
 		if ( $component['container']['bem_element'] ) {
 
-			$bem_block = static::get_bem_block($component);
 			$parent_bem_block = static::get_parent();
 
 			if ($parent_bem_block) {
 
+
 				// If bem_element is set to true automatically set bem_block as bem_element
 				if ( $component['container']['bem_element'] === true ) {
-					$component['container']['bem_element'] = $bem_block ?? $name;
+					$component['container']['bem_element'] = static::get_bem_block($component) ?? $component['name'];
 				}
 
 				// Add BEM element as class
@@ -335,6 +348,10 @@ final class Composition {
 		$ancestors = static::get_ancestors();
 
 		return end($ancestors); reset($ancestors);
+	}
+
+	public static function has_parent( $name ) {
+		return (static::get_parent() == $name);
 	}
 
 	private static function add_parent( $component ) {
@@ -511,7 +528,7 @@ final class Composition {
 	 */
 	public static function setup_component_defaults( $name, $component ) {
 
-		add_filter( "ejo/composition/component_defaults/{$name}", $component, 10, 2 );
+		add_filter( "ejo/composition/setup_component_defaults/{$name}", $component, 10, 2 );
 	}
 
 	/**
@@ -524,7 +541,7 @@ final class Composition {
 	 */
 	public static function setup_component( $name, $component ) {
 
-		add_filter( "ejo/composition/component/{$name}", $component, 10, 2 );
+		add_filter( "ejo/composition/setup_component/{$name}", $component, 10, 2 );
 	}
 
 	/**
@@ -533,9 +550,9 @@ final class Composition {
 	 * @param string Name
 	 * @param string or function
 	 */
-	public static function component_before_render( $name, $function ) {
+	public static function before_render_component( $name, $function ) {
 
-		add_action( "ejo/composition/component_before_render/{$name}", $function );
+		add_action( "ejo/composition/before_render_component/{$name}", $function );
 	}
 
 	/**
@@ -544,10 +561,10 @@ final class Composition {
 	 * @param string Name
 	 * @param string or function
 	 */
-	public static function component_before_render_remove_action( $name, $function ) {
+	public static function before_render_component_remove_action( $name, $function ) {
 
 		if ( is_string($function) || is_array($function) ) {
-			remove_action( "ejo/composition/component_before_render/{$name}", $function );
+			remove_action( "ejo/composition/before_render_component/{$name}", $function );
 		}
 	}
 }

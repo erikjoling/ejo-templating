@@ -123,14 +123,14 @@ function render_callback( $callback ) {
 	$callback = ( is_string($callback) ) ? [ $callback ] : $callback;
 
 	// First part of callback is the callback functions, other entries are parameters
-	$callback = array_shift($callback);
+	$function = array_shift($callback);
 	$params   = $callback;
 
 	if ( $params) {
-		$render .= call_user_func_array( $callback, $params );
+		$render .= call_user_func_array( $function, $params );
 	}
 	else {
-		$render .= call_user_func( $callback );
+		$render .= call_user_func( $function );
 	}
 
 	return $render;
