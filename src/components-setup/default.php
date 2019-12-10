@@ -104,7 +104,8 @@ Composition::setup_component_defaults( 'page-title', function( $component ) {
 });
 
 Composition::setup_component_defaults( 'page-content', function( $component ) {
-	$component['container'] = [ 'bem_block' => true, 'bem_element' => 'content' ];
+	// $component['container'] = [ 'bem_block' => true, 'bem_element' => 'content' ];
+	$component['container'] = false;
 	$component['content']   = [ __NAMESPACE__ . '\\render_content' ];
 	
 	return $component;

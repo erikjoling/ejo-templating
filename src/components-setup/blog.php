@@ -10,7 +10,8 @@ namespace Ejo\Templating;
  * Post stuff
  */
 
-Composition::setup_component_defaults( 'post-loop', function( $component ) {
+Composition::setup_component_defaults( 'post-archive-loop', function( $component ) {
+	$component['container'] = [ 'tag' => 'section', 'inner_wrap' => true ];
 	$component['content'] = [ __NAMESPACE__ . '\\render_post_loop' ];
 
 	return $component;
@@ -58,8 +59,9 @@ Composition::setup_component_defaults( 'plural-post-meta', function( $component 
 	return $component;
 });
 
-Composition::setup_component_defaults( 'excerpt', function( $component ) { 
-	$component['content'] = [ __NAMESPACE__ . '\\render_excerpt' ];
+Composition::setup_component_defaults( 'excerpt', function( $component ) {
+	$component['container'] = false;
+	$component['content']   = [ __NAMESPACE__ . '\\render_excerpt' ];
 
 	return $component;
 });
@@ -99,6 +101,13 @@ Composition::setup_component_defaults( 'meta-categories', function( $component )
 	return $component;
 });
 
+Composition::setup_component_defaults( 'posts-nav', function( $component ) { 
+	$component['container'] = [ 'tag' => 'nav' ];
+	$component['content']   = [ '\\get_the_posts_pagination', ['mid_size' => 2 ] ];
+
+	return $component;
+});
+
 Composition::setup_component_defaults( 'post-nav', function( $component ) { 
 	$component['container'] = [ 'tag' => 'nav' ];
 	$component['content']   = [ ['post-nav-link-previous'], ['post-nav-link-next'] ];
@@ -127,7 +136,8 @@ if ( is_template_type('archive') || is_template_type('term') ) {
 
 	Composition::setup_component_defaults( 'page-main', function( $component ) {
 
-		Composition::component_insert_after( $component['content'], ['post-loop'], ['page-content'] );
+		Composition::component_insert_after( $component['content'], ['post-archive-loop'], ['page-content'] );
+		Composition::component_insert_after( $component['content'], ['posts-nav'], ['post-archive-loop'] );
 
 		return $component;
 	});	
