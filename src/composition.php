@@ -550,7 +550,7 @@ final class Composition {
 	 * @param string Name
 	 * @param string or function
 	 */
-	public static function before_render_component( $name, $function ) {
+	public static function do_before_render_component( $name, $function ) {
 
 		add_action( "ejo/composition/before_render_component/{$name}", $function );
 	}
@@ -561,7 +561,7 @@ final class Composition {
 	 * @param string Name
 	 * @param string or function
 	 */
-	public static function before_render_component_remove_action( $name, $function ) {
+	public static function not_do_before_render_component( $name, $function ) {
 
 		if ( is_string($function) || is_array($function) ) {
 			remove_action( "ejo/composition/before_render_component/{$name}", $function );

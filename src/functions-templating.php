@@ -75,7 +75,6 @@ function render_breadcrumbs() {
 	return 'Breadcrumbs';
 }
 
-
 function render_title( $link = false ) {
 	$title = get_the_title();
 	
@@ -113,9 +112,8 @@ function render_excerpt() {
 }
 
 function render_content() {
-	ob_start();
-	the_content();
-	return ob_get_clean();
+	$content = apply_filters( 'the_content', get_page_content() );
+	return $content;
 }
 
 function render_post_loop( $args = null ) {
@@ -127,7 +125,7 @@ function render_post_loop( $args = null ) {
 		while ( $custom_query->have_posts() ) { 
 			$custom_query->the_post(); 
 
-			echo Composition::render_component('plural-post');
+			echo Composition::render_component(['plural-post']);
 
 			wp_reset_postdata(); 
 		}
@@ -137,7 +135,7 @@ function render_post_loop( $args = null ) {
 		while ( have_posts() ) { 
 			the_post();
 
-			echo Composition::render_component('plural-post');
+			echo Composition::render_component(['plural-post']);
 		}
 	}
 

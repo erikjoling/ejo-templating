@@ -40,89 +40,52 @@ function get_menu_name( $location ) {
 	return $menu ? $menu->name : '';
 }
 
+function get_page_title() {
+	$title = false;
 
-function get_page_type() {
+	$template = get_template();
+	$template_type = get_template_type();
 
-	$page_type = '';
-
-	// if ( is_home_and_front_page() ) {
-	// 	$page_type = 'home_front';
-
-	// } else
-	if ( is_home() ) {
-		$page_type = 'blog';
-
-	} elseif ( is_singular() ) {
-		$page_type = 'singular';
-
-	} elseif ( is_category() || is_tag() || is_tax() ) {
-		$page_type = 'term';
-
-	} elseif ( is_post_type_archive() ) {
-		$page_type = 'post_type_archive';
-
-	} elseif ( is_author() ) {
-		$page_type = 'author';
-
-	} elseif ( is_date() ) {
-		$page_type = 'date';
-
-	} elseif ( is_search() ) {
-		$page_type = 'search';
-
-	} elseif ( is_404() ) {
-		$page_type = '404';
+	if ($template_type == 'single') {
+		$title = get_the_title();
+	}
+	elseif ($template_type == 'term') {
+		$title = single_term_title('', false);
+	}
+	elseif ($template == 'blog') {
+		$title = get_post_field('post_title', get_queried_object_id());
+	}
+	elseif ($template == '404') {
+		$title = render_404_title();
+	}
+	elseif ($template == 'search') {
+		$title = sprintf( esc_html__( 'Search results for: %s', 'ejo-base' ), get_search_query() );
 	}
 
-	return $page_type;
+	return $title;
 }
 
-function get_page_image_id() {
+function get_page_content() {
+	$content = false;
 
-	$page_type = get_page_type();
+	$template = get_template();
+	$template_type = get_template_type();
 
-	if ($page_type == 'singular') { 
-		return get_post_thumbnail_id();
+	if ($template_type == 'single') {
+		$content = get_the_content();
+	}
+	elseif ($template_type == 'term') {
+		$content = term_description();
+	}
+	elseif ($template == 'blog') {
+		$content = get_post_field('post_content', get_queried_object_id());
+	}
+	elseif ($template == '404') {
+		$content = render_404_content();
+	}
+	elseif ($template == 'search') {
+		$content = sprintf( esc_html__( 'Search results for: %s', 'ejo-base' ), get_search_query() );
 	}
 
-	if ($page_type == 'blog') { 
-		return get_post_thumbnail_id( get_queried_object_id() );
-	}
-
-	if ($page_type == 'home_front') { 
-		return false;
-	}
-
-	if ($page_type == 'search') { 
-		return false;
-	}
-
-	if ($page_type == '404') { 
-		return false;
-	}
-
-	if ($page_type == 'term') { 
-		return \get_term_meta( \get_queried_object_id(), 'image', true );
-	}
-
-	if ($page_type == 'post_type_archive') { 
-		return false;
-	}
-
-	if ($page_type == 'author') { 
-		return false;
-	}
-
-	return false;
-}
-
-function get_page_image_url( $size ) {
-	$image_url = false;
-	$image_id = get_page_image_id();
-
-	if ($image_id) {
-		$image_url = \wp_get_attachment_image_url( $image_id, $size );
-	}
-
-	return $image_url;
+	return $content;
 }
