@@ -53,7 +53,7 @@ Composition::setup_component_defaults( 'page-header', function( $component ) {
 
 Composition::setup_component_defaults( 'page-main', function( $component ) { 
 	$component['container'] = [ 'tag' => 'div', 'force_display' => true ];
-	$component['content'] 	= [ ['page-title'], ['page-content'] ];
+	$component['content'] 	= [ ['page-content'] ];
 
 	return $component;
 });

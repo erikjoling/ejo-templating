@@ -74,8 +74,6 @@ final class Composition {
 		// Add action in case we need to do some action in stead of filtering (like the_post())
 		do_action( "ejo/composition/before_render_component/{$component['name']}" );
 
-		// log($component);
-
 		$render = static::setup_component_render($component);
 
 		return $render;
@@ -115,8 +113,6 @@ final class Composition {
 			'container' => $component_defaults['container'] ?? [],
 			'content'	=> $component_defaults['content'] ?? [],
 		];
-
-		// log($component_defaults);
 
 		// Merge the component with the defaults
 		$component = array_replace_recursive($component_defaults, $component);
@@ -180,6 +176,7 @@ final class Composition {
 		// Setup render
 		$render = '';
 
+		$name 		   = $component['name'];
 		$container     = $component['container'];
 		$force_display = $container['force_display'] ?? false;
 		$content       = $component['content'];
@@ -485,6 +482,9 @@ final class Composition {
 		if ( $index !== false ) {
 			unset($components[$index]);
 		}
+
+		// Fill the index gaps
+		$components = array_values($components);
 	}
 
 	/**
