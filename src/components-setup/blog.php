@@ -53,7 +53,7 @@ Composition::setup_component_defaults( 'plural-post-footer', function( $componen
 });
 
 Composition::setup_component_defaults( 'plural-post-meta', function( $component ) {
-	$component['container'] = [ 'bem_block' => 'post-meta', 'bem_element' => 'meta' ];
+	$component['container'] = [ 'bem_block' => 'post-meta', 'bem_element' => false ];
 	$component['content']   = [ ['meta-author'], ['meta-date'], ['meta-categories'] ];
 
 	return $component;
@@ -81,21 +81,21 @@ Composition::setup_component_defaults( 'post-meta', function( $component ) {
 });
 
 Composition::setup_component_defaults( 'meta-author', function( $component ) { 
-	$component['container'] = [ 'bem_block' => true, 'bem_element' => 'author' ];
+	$component['container'] = [ 'bem_block' => false, 'bem_element' => 'author' ];
 	$component['content']   = [ __NAMESPACE__ . '\\render_post_author' ]; 
 
 	return $component;
 });
 
 Composition::setup_component_defaults( 'meta-date', function( $component ) { 
-	$component['container'] = [ 'bem_block' => true, 'bem_element' => 'date' ];
+	$component['container'] = [ 'bem_block' => false, 'bem_element' => 'date' ];
 	$component['content']   = [ __NAMESPACE__ . '\\render_post_date' ]; 
 
 	return $component;
 });
 
 Composition::setup_component_defaults( 'meta-categories', function( $component ) { 
-	$component['container'] = [ 'bem_block' => true, 'bem_element' => 'categories' ];
+	$component['container'] = [ 'bem_block' => false, 'bem_element' => 'categories' ];
 	$component['content']   = [ __NAMESPACE__ . '\\render_post_categories' ]; 
 
 	return $component;
