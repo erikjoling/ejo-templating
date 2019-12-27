@@ -1,6 +1,6 @@
 {
     "name"       : "erikjoling/ejo-templating",
-    "description": "My custom templating foundation",
+    "description": "A different take on templating for WordPress. Composing components.",
     "keywords"   : ["wordpress"],
     "homepage"   : "https://www.ejoweb.nl/",
     "license"    : "GPL-2.0+",
