@@ -135,3 +135,138 @@ function render_callback( $callback ) {
 
 	return $render;
 }
+
+/**
+ * Get primary navigation location
+ */
+function get_nav_location() {
+	return 'primary';
+}
+
+/** 
+ * Get HTML attributes
+ */
+function get_html_attr() {
+	$attr = [];
+
+	$parts = wp_kses_hair( get_language_attributes(), [ 'http', 'https' ] );
+
+	if ( $parts ) {
+
+		foreach ( $parts as $part ) {
+
+			$attr[ $part['name'] ] = $part['value'];
+		}
+	}
+
+	return $attr;
+}
+
+
+function get_menu_name( $location ) {
+	$locations = get_nav_menu_locations();
+
+	$menu = isset( $locations[ $location ] ) ? wp_get_nav_menu_object( $locations[ $location ] ) : '';
+
+	return $menu ? $menu->name : '';
+}
+
+function get_page_title() {
+	$title = false;
+
+	if (\is_singular()) {
+		$title = \get_the_title();
+	}
+	elseif (is_blog_page()) {
+		$title = \get_post_field('post_title', \get_queried_object_id());
+	}
+	// elseif (\is_tax()) {
+	// 	$title = \single_term_title('', false);
+	// }
+	elseif (\is_archive()) {
+		$title = \get_the_archive_title();
+	}
+	elseif (\is_404()) {
+		$title = render_404_title();
+	}
+	elseif (\is_search()) {
+		$title = sprintf( esc_html__( 'Search results for: %s', 'ejo-base' ), get_search_query() );
+	}
+
+	return apply_filters( 'ejo/templating/get_page_title', $title );
+}
+
+function get_page_content() {
+	$content = false;
+
+	if (\is_singular()) {
+		$content = \get_the_content();
+	}
+	elseif (is_blog_page()) {
+		$content = \get_post_field('post_content', \get_queried_object_id());
+	}
+	elseif (\is_tax() || \is_tag() || \is_category()) {
+		$content = \term_description();
+	}
+	elseif (\is_archive()) {
+		$content = \get_the_archive_description();		
+	}
+	elseif (\is_404()) {
+		$content = render_404_content();
+	}
+	elseif (\is_search()) {
+		$content = sprintf( esc_html__( 'Search results for: %s', 'ejo-base' ), get_search_query() );
+	}
+
+	return apply_filters( 'ejo/templating/get_page_content', $content );
+}
+
+// function get_page_title() {
+// 	$title = false;
+
+// 	$template = get_template();
+// 	$template_type = get_template_type();
+
+// 	if ($template_type == 'singular') {
+// 		$title = get_the_title();
+// 	}
+// 	elseif ($template_type == 'term') {
+// 		$title = single_term_title('', false);
+// 	}
+// 	elseif ($template == 'blog') {
+// 		$title = get_post_field('post_title', get_queried_object_id());
+// 	}
+// 	elseif ($template == '404') {
+// 		$title = render_404_title();
+// 	}
+// 	elseif ($template == 'search') {
+// 		$title = sprintf( esc_html__( 'Search results for: %s', 'ejo-base' ), get_search_query() );
+// 	}
+
+// 	return $title;
+// }
+
+// function get_page_content() {
+// 	$content = false;
+
+// 	$template = get_template();
+// 	$template_type = get_template_type();
+
+// 	if ($template_type == 'singular') {
+// 		$content = get_the_content();
+// 	}
+// 	elseif ($template_type == 'term') {
+// 		$content = term_description();
+// 	}
+// 	elseif ($template == 'blog') {
+// 		$content = get_post_field('post_content', get_queried_object_id());
+// 	}
+// 	elseif ($template == '404') {
+// 		$content = render_404_content();
+// 	}
+// 	elseif ($template == 'search') {
+// 		$content = sprintf( esc_html__( 'Search results for: %s', 'ejo-base' ), get_search_query() );
+// 	}
+
+// 	return $content;
+// }

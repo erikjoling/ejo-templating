@@ -130,7 +130,7 @@ Composition::setup_component_defaults( 'post-nav-link-next', function( $componen
 /**
  * Template Type: archive
  */
-if ( is_template_type('archive') || is_template_type('term') ) {
+if ( is_archive() || is_home() || is_blog_page() ) {
 
 	Composition::not_do_before_render_component( 'page', '\\the_post' );
 
@@ -146,7 +146,7 @@ if ( is_template_type('archive') || is_template_type('term') ) {
 /**
  * Template: Post
  */
-if ( is_template('post') ) {
+if ( is_singular( 'post' ) ) {
 
 	Composition::setup_component_defaults( 'page-header', function( $component ) {
 

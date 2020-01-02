@@ -18,7 +18,7 @@
     },
     "autoload"   : {
         "files" : [
-            "src/bootstrap.php"
+            "app/bootstrap.php"
         ]
     },
     "require"     : {
