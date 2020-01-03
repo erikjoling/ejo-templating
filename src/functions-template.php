@@ -5,48 +5,15 @@
 
 namespace Ejo\Templating;
 
-
-/** 
- * Render HTML attributes
- */
-function render_html_attr() {
-	return render_attr( get_html_attr() );
-}
-
-
-/** 
- * Render Body classes
- */
-function render_body_classes() {
-	return render_classes( \get_body_class() );
-}
-
-/** 
- * Render Site
- */
-function render_site() {
-
+function render_wp_head() {
 	\ob_start();
+	\wp_head();
+	return \ob_get_clean();
+}
 
-	?>
-	<!doctype html>
-	<html <?= render_html_attr(); ?>>
-
-	<head>
-		<?php \wp_head(); ?>
-	</head>
-
-	<body class="<?= render_body_classes(); ?>">
-
-		<?php Composition::display(); ?>
-
-		<?php \wp_footer(); ?>
-		
-	</body>
-
-	</html>
-	<?php
-
+function render_wp_footer() {
+	\ob_start();
+	\wp_footer();
 	return \ob_get_clean();
 }
 

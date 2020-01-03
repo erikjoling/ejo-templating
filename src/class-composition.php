@@ -46,8 +46,8 @@ final class Composition {
 	 */
 	public static function render() {
 
-		// return static::render_component( 'site' );
-		return static::render_component( ['site'] );
+		// return static::render_component( ['site'] );
+		return static::render_component( ['html'] );
 	}
 
 	/**
@@ -72,12 +72,11 @@ final class Composition {
 		$component = static::setup_component_data($component);
 
 		// Add action in case we need to do some action in stead of filtering (like the_post())
-		do_action( "ejo/composition/before_render_component/{$component['name']}" );
+		do_action( "ejo/composition/do_action/{$component['name']}" );
 
 		$render = static::setup_component_render($component);
 
 		return $render;
-
 	}
 
 	/**
@@ -100,25 +99,8 @@ final class Composition {
 		// The name is untouchable
 		$name = esc_html($component['name']);
 
-		// Setup component defaults
-		$component_defaults = apply_filters( "ejo/composition/setup_component_defaults/{$name}", [
-			'name'      => $name,
-			'container' => [],
-			'content'	=> [],
-		] );
-
-		// Make sure filtered component is how we like it
-		$component_defaults = [
-			'name'      => $name,
-			'container' => $component_defaults['container'] ?? [],
-			'content'	=> $component_defaults['content'] ?? [],
-		];
-
-		// Merge the component with the defaults
-		$component = array_replace_recursive($component_defaults, $component);
-
 		// Give themes and plugins opportunity to override passed component
-		$component = apply_filters( "ejo/composition/setup_component/{$name}", $component );
+		$component = apply_filters( "ejo/composition/component_data/{$name}", $component );
 
 		// Make sure filtered component is how we like it
 		$component = [
@@ -232,13 +214,14 @@ final class Composition {
 					$render = sprintf( '<div class="%s">%s</div>', $inner_class, $render);
 				}
 
+				$tag 		= $container['tag'];
 				$classes    = render_classes( static::get_classes($component) );
+				$classes    = ($classes) ? " class=\"$classes\"" : '';
 				$attributes = render_attr( $container['attr'] );
 				$attributes = ($attributes) ? " $attributes" : '';
-				$tag 		= $container['tag'];
 
 				// Setup render format
-				$render = sprintf( '<%1$s class="%2$s"%3$s>%4$s</%1$s>', $tag, $classes, $attributes, $render );
+				$render = sprintf( '<%1$s%2$s%3$s>%4$s</%1$s>', $tag, $classes, $attributes, $render );
 			}
 		}
 
@@ -520,16 +503,16 @@ final class Composition {
 		return $index;
 	}
 
-	/**
-	 * Component defaults
-	 *
-	 * @param string Name
-	 * @param array Component (element, content)
-	 */
-	public static function setup_component_defaults( $name, $component ) {
+	// /**
+	//  * Component defaults
+	//  *
+	//  * @param string Name
+	//  * @param array Component (element, content)
+	//  */
+	// public static function setup_component_defaults( $name, $component ) {
 
-		add_filter( "ejo/composition/setup_component_defaults/{$name}", $component, 10, 2 );
-	}
+	// 	add_filter( "ejo/composition/setup_component_defaults/{$name}", $component, 10, 2 );
+	// }
 
 	/**
 	 * Overwrite Component
@@ -539,9 +522,9 @@ final class Composition {
 	 * @param string Name
 	 * @param array Component (element, content)
 	 */
-	public static function setup_component( $name, $component ) {
+	public static function component_data( $name, $component ) {
 
-		add_filter( "ejo/composition/setup_component/{$name}", $component, 10, 2 );
+		add_filter( "ejo/composition/component_data/{$name}", $component, 10, 2 );
 	}
 
 	/**
@@ -550,9 +533,9 @@ final class Composition {
 	 * @param string Name
 	 * @param string or function
 	 */
-	public static function do_before_render_component( $name, $function ) {
+	public static function do_action( $name, $function ) {
 
-		add_action( "ejo/composition/before_render_component/{$name}", $function );
+		add_action( "ejo/composition/do_action/{$name}", $function );
 	}
 
 	/**
@@ -561,10 +544,10 @@ final class Composition {
 	 * @param string Name
 	 * @param string or function
 	 */
-	public static function not_do_before_render_component( $name, $function ) {
+	public static function not_do_action( $name, $function ) {
 
 		if ( is_string($function) || is_array($function) ) {
-			remove_action( "ejo/composition/before_render_component/{$name}", $function );
+			remove_action( "ejo/composition/do_action/{$name}", $function );
 		}
 	}
 }
