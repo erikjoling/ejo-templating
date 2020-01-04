@@ -24,18 +24,18 @@ Composition::component_data( 'head', function( $component ) {
 });
 
 Composition::component_data( 'body', function( $component ) { 
-	$component['container'] = [ 'tag' => 'body', 'force_display' => true, 'bem_block' => 'site', 'class' => \get_body_class() ];
-	$component['content']   = [ ['site-header'], ['site-main'], ['site-footer'], ['site-footer-scripts'] ];
+	$component['container'] = [ 'tag' => 'body', 'force_display' => true, 'bem_block' => false, 'class' => \get_body_class() ];
+	$component['content']   = [ ['site'], ['site-footer-scripts'] ];
 
 	return $component;
 });
 
-// Composition::component_data( 'site', function( $component ) { 
-// 	$component['container'] = [ 'tag' => 'div', 'force_display' => true  ];
-// 	$component['content']   = [ ['site-header'], ['site-main'], ['site-footer'] ];
+Composition::component_data( 'site', function( $component ) { 
+	$component['container'] = [ 'tag' => 'div', 'force_display' => true  ];
+	$component['content']   = [ ['site-header'], ['site-main'], ['site-footer'] ];
 
-// 	return $component;
-// });
+	return $component;
+});
 
 Composition::component_data( 'site-header', function( $component ) { 
 	$component['container'] = [ 'tag' => 'header', 'force_display' => true ];
